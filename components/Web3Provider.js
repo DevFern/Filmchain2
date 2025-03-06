@@ -18,11 +18,17 @@ export function Web3Provider({ children }) {
   const [web3Modal, setWeb3Modal] = useState(null);
 
   useEffect(() => {
+    // Using public RPC endpoints instead of Infura
     const providerOptions = {
       walletconnect: {
         package: WalletConnectProvider,
         options: {
-          infuraId: process.env.NEXT_PUBLIC_INFURA_ID,
+          rpc: {
+            1: "https://eth.llamarpc.com", // Ethereum Mainnet
+            56: "https://bsc-dataseed.binance.org", // BSC Mainnet
+            137: "https://polygon-rpc.com", // Polygon Mainnet
+            43114: "https://api.avax.network/ext/bc/C/rpc" // Avalanche C-Chain
+          },
         },
       },
     };
