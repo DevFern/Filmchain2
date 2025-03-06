@@ -217,10 +217,8 @@ export default function BlockOffice() {
                     ) : (
                       <button
                         onClick={purchaseSubscription}
-                        className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-md"<button
-                        onClick={purchaseSubscription}
                         className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-md"
-                      >
+>
                         Subscribe Now
                       </button>
                     )
