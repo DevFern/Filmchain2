@@ -293,7 +293,7 @@ export default function IndieFund() {
                         <p className="text-white">{selectedProject.startDate.toLocaleDateString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">En<div>
+                        <p className="text-sm text-gray-500">En<div></p>
                         <p className="text-sm text-gray-500">End Date</p>
                         <p className="text-white">{selectedProject.endDate.toLocaleDateString()}</p>
                       </div>
