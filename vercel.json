@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_FILM_TOKEN_ADDRESS": "@next_public_film_token_address",
+    "NEXT_PUBLIC_NFT_MARKET_ADDRESS": "@next_public_nft_market_address",
+    "NEXT_PUBLIC_FILM_NFT_ADDRESS": "@next_public_film_nft_address",
+    "NEXT_PUBLIC_COMMUNITY_VOICE_ADDRESS": "@next_public_community_voice_address",
+    "NEXT_PUBLIC_INDIE_FUND_ADDRESS": "@next_public_indie_fund_address",
+    "NEXT_PUBLIC_BLOCK_OFFICE_ADDRESS": "@next_public_block_office_address",
+    "NEXT_PUBLIC_HYRE_BLOCK_ADDRESS": "@next_public_hyre_block_address"
+  }
+}
