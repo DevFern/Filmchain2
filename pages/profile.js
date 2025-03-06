@@ -151,80 +151,76 @@ export default function Profile() {
                       <h2 className="text-2xl font-bold text-white mb-1">
                         {hasProfile ? profile?.name : 'Anonymous User'}
                       </h2>
-                      <p className="text-gray-400">{account}</p>
+                      <p className="text-gray-400">
+                        {account.substring(0, 6)}...{account.substring(account.length - 4)}
+                      </p>
                     </div>
+                    
                     <div className="mt-4 md:mt-0">
-                      <a 
-                        href="/hyre-block"
+                      <button
+                        onClick={() => setActiveTab('edit-profile')}
                         className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-4 py-2 rounded-md"
                       >
                         {hasProfile ? 'Edit Profile' : 'Create Profile'}
-                      </a>
+                      </button>
                     </div>
                   </div>
                   
-                  {hasProfile && (
+                  {hasProfile && profile?.bio && (
                     <div className="mb-6">
-                      <p className="text-gray-400">{profile?.bio}</p>
+                      <h3 className="text-lg font-semibold text-white mb-2">Bio</h3>
+                      <p className="text-gray-400">{profile.bio}</p>
                     </div>
                   )}
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-gray-800 p-4 rounded-lg">
-                      <p className="text-gray-400 text-sm mb-1">FILM Balance</p>
-                      <p className="text-2xl font-bold text-white">{parseFloat(stats.filmBalance).toFixed(2)}</p>
+                  {hasProfile && profile?.skills && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-2">Skills</h3>
+                      <p className="text-gray-400">{profile.skills}</p>
                     </div>
-                    <div className="bg-gray-800 p-4 rounded-lg">
-                      <p className="text-gray-400 text-sm mb-1">NFTs Owned</p>
-                      <p className="text-2xl font-bold text-white">{stats.nftCount}</p>
-                    </div>
-                    <div className="bg-gray-800 p-4 rounded-lg">
-                      <p className="text-gray-400 text-sm mb-1">Transactions</p>
-                      <p className="text-2xl font-bold text-white">{stats.transactions}</p>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
             
             <div className="mb-8">
-              <div className="flex space-x-4 overflow-x-auto pb-2">
+              <div className="flex overflow-x-auto space-x-4 pb-4">
                 <button
                   onClick={() => setActiveTab('overview')}
-                  className={`px-4 py-2 rounded-md whitespace-nowrap ${
+                  className={`px-4 py-2 rounded-md ${
                     activeTab === 'overview'
-                      ? 'bg-teal-500 text-white'
-                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                    ? 'bg-teal-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                   }`}
                 >
                   Overview
                 </button>
                 <button
                   onClick={() => setActiveTab('nfts')}
-                  className={`px-4 py-2 rounded-md whitespace-nowrap ${
+                  className={`px-4 py-2 rounded-md ${
                     activeTab === 'nfts'
-                      ? 'bg-teal-500 text-white'
-                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                    ? 'bg-teal-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                   }`}
                 >
-                  NFT Collection
+                  NFTs
                 </button>
                 <button
-                  onClick={() => setActiveTab('activity')}
-                  className={`px-4 py-2 rounded-md whitespace-nowrap ${
-                    activeTab === 'activity'
-                      ? 'bg-teal-500 text-white'
-                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                  onClick={() => setActiveTab('jobs')}
+                  className={`px-4 py-2 rounded-md ${
+                    activeTab === 'jobs'
+                    ? 'bg-teal-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                   }`}
                 >
-                  Activity
+                  Jobs
                 </button>
                 <button
                   onClick={() => setActiveTab('settings')}
-                  className={`px-4 py-2 rounded-md whitespace-nowrap ${
+                  className={`px-4 py-2 rounded-md ${
                     activeTab === 'settings'
-                      ? 'bg-teal-500 text-white'
-                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                    ? 'bg-teal-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                   }`}
                 >
                   Settings
@@ -237,11 +233,9 @@ export default function Profile() {
                 <h2 className="text-2xl font-bold text-white mb-6">Account Overview</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-  <div>
-    <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
-    // rest of your code
-  </div>
+                  <div>
                     <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
+                    {/* Activity content goes here */}
                     <div className="bg-gray-800 rounded-lg p-4">
                       {loading ? (
                         <p className="text-gray-400 text-center py-4">Loading activity...</p>
@@ -258,83 +252,8 @@ export default function Profile() {
                               <p className="text-gray-400 text-sm">Connected to {chainId === 1 ? 'Ethereum' : chainId === 56 ? 'BSC' : chainId === 137 ? 'Polygon' : 'Unknown'} network</p>
                             </div>
                           </div>
-                          
-                          {nfts.length > 0 && (
-                            <div className="flex items-center">
-                              <div className="bg-teal-900 p-2 rounded-full mr-4">
-                                <svg className="w-5 h-5 text-teal-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                  <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd"></path>
-                                </svg>
-                              </div>
-                              <div>
-                                <p className="text-white">NFT Collection Updated</p>
-                                <p className="text-gray-400 text-sm">You own {nfts.length} NFTs</p>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {hasProfile && (
-                            <div className="flex items-center">
-                              <div className="bg-purple-900 p-2 rounded-full mr-4">
-                                <svg className="w-5 h-5 text-purple-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"></path>
-                                </svg>
-                              </div>
-                              <div>
-                                <p className="text-white">Profile Created</p>
-                                <p className="text-gray-400 text-sm">Profile created on {profile?.createdAt.toLocaleDateString()}</p>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       )}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <a 
-                          href="/wallet" 
-                          className="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-center"
-                        >
-                          <svg className="w-8 h-8 text-teal-400 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
-                          </svg>
-                          <p className="text-white">Wallet</p>
-                        </a>
-                        
-                        <a 
-                          href="/nft-market" 
-                          className="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-center"
-                        >
-                          <svg className="w-8 h-8 text-teal-400 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd"></path>
-                          </svg>
-                          <p className="text-white">NFT Market</p>
-                        </a>
-                        
-                        <a 
-                          href="/community-voice" 
-                          className="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-center"
-                        >
-                          <svg className="w-8 h-8 text-teal-400 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd"></path>
-                          </svg>
-                          <p className="text-white">Vote</p>
-                        </a>
-                        
-                        <a 
-                          href="/indie-fund" 
-                          className="bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-center"
-                        >
-                          <svg className="w-8 h-8 text-teal-400 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
-                          </svg>
-                          <p className="text-white">Fund Projects</p>
-                        </a>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -343,32 +262,24 @@ export default function Profile() {
             
             {activeTab === 'nfts' && (
               <div className="bg-gray-900 rounded-lg p-8">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-white">Your NFT Collection</h2>
-                  <a 
-                    href="/nft-market"
-                    className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-4 py-2 rounded-md text-sm"
-                  >
-                    Browse Market
-                  </a>
-                </div>
+                <h2 className="text-2xl font-bold text-white mb-6">Your NFT Collection</h2>
                 
                 {loading ? (
                   <div className="text-center py-12">
                     <p className="text-gray-400">Loading NFTs...</p>
                   </div>
                 ) : nfts.length === 0 ? (
-                  <div className="text-center py-12 bg-gray-800 rounded-lg">
-                    <p className="text-gray-400 mb-4">You don't own any NFTs yet</p>
+                  <div className="text-center py-12">
+                    <p className="text-gray-400">You don't own any NFTs yet</p>
                     <a 
-                      href="/nft-market"
-                      className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-md"
+                      href="/nft-market" 
+                      className="mt-4 inline-block bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-md"
                     >
                       Browse NFT Market
                     </a>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {nfts.map((nft) => (
                       <div key={nft.tokenId} className="bg-gray-800 rounded-lg overflow-hidden">
                         <div className="aspect-w-1 aspect-h-1 bg-gray-700">
@@ -379,17 +290,14 @@ export default function Profile() {
                           />
                         </div>
                         <div className="p-4">
-                          <h3 className="text-lg font-bold text-white mb-2">{nft.name}</h3>
-                          <p className="text-gray-400 text-sm mb-4 line-clamp-2">{nft.description}</p>
-                          <div className="flex justify-between items-center">
-                            <span className="text-gray-400 text-sm">Token ID: {nft.tokenId}</span>
-                            <a 
-                              href={`/nft-market?id=${nft.tokenId}`}
-                              className="text-teal-400 hover:underline text-sm"
-                            >
-                              View Details
-                            </a>
-                          </div>
+                          <h3 className="text-lg font-semibold text-white mb-1">{nft.name}</h3>
+                          <p className="text-gray-400 text-sm mb-2">Token ID: {nft.tokenId}</p>
+                          <a 
+                            href={`/nft/${nft.tokenId}`} 
+                            className="text-teal-400 text-sm hover:underline"
+                          >
+                            View Details
+                          </a>
                         </div>
                       </div>
                     ))}
@@ -398,90 +306,20 @@ export default function Profile() {
               </div>
             )}
             
-            {activeTab === 'activity' && (
+            {activeTab === 'jobs' && (
               <div className="bg-gray-900 rounded-lg p-8">
-                <h2 className="text-2xl font-bold text-white mb-6">Activity Log</h2>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-white">Your Jobs</h2>
+                  <button
+                    onClick={() => setActiveTab('post-job')}
+                    className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-4 py-2 rounded-md"
+                  >
+                    Post a Job
+                  </button>
+                </div>
                 
-                <div className="space-y-6">
-                  <div className="bg-gray-800 rounded-lg p-4">
-                    <div className="flex items-start">
-                      <div className="bg-blue-900 p-2 rounded-full mr-4 mt-1">
-                        <svg className="w-5 h-5 text-blue-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                          <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
-                        </svg>
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="text-white font-medium">Wallet Connected</p>
-                            <p className="text-gray-400 text-sm">Connected to {chainId === 1 ? 'Ethereum' : chainId === 56 ? 'BSC' : chainId === 137 ? 'Polygon' : 'Unknown'} network</p>
-                          </div>
-                          <span className="text-gray-500 text-sm">Just now</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {hasProfile && (
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <div className="flex items-start">
-                        <div className="bg-purple-900 p-2 rounded-full mr-4 mt-1">
-                          <svg className="w-5 h-5 text-purple-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"></path>
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="text-white font-medium">Profile Created</p>
-                              <p className="text-gray-400 text-sm">You created your profile as "{profile?.name}"</p>
-                            </div>
-                            <span className="text-gray-500 text-sm">{profile?.createdAt.toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {nfts.length > 0 && (
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <div className="flex items-start">
-                        <div className="bg-teal-900 p-2 rounded-full mr-4 mt-1">
-                          <svg className="w-5 h-5 text-teal-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd"></path>
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="text-white font-medium">NFT Purchased</p>
-                              <p className="text-gray-400 text-sm">You purchased "{nfts[0].name}" NFT</p>
-                            </div>
-                            <span className="text-gray-500 text-sm">Recently</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="bg-gray-800 rounded-lg p-4">
-                    <div className="flex items-start">
-                      <div className="bg-green-900 p-2 rounded-full mr-4 mt-1">
-                        <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
-                        </svg>
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="text-white font-medium">Account Created</p>
-                            <p className="text-gray-400 text-sm">You created your FILM Chain account</p>
-                          </div>
-                          <span className="text-gray-500 text-sm">When you connected</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div className="text-center py-12">
+                  <p className="text-gray-400">You haven't posted any jobs yet</p>
                 </div>
               </div>
             )}
@@ -490,135 +328,40 @@ export default function Profile() {
               <div className="bg-gray-900 rounded-lg p-8">
                 <h2 className="text-2xl font-bold text-white mb-6">Account Settings</h2>
                 
-                <div className="space-y-8">
+                <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Connected Wallet</h3>
-                    <div className="bg-gray-800 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Wallet</h3>
+                    <div className="bg-gray-800 p-4 rounded-lg">
                       <div className="flex justify-between items-center">
                         <div>
+                          <p className="text-gray-400 text-sm">Connected Address</p>
                           <p className="text-white">{account}</p>
-                          <p className="text-gray-400 text-sm">Connected to {chainId === 1 ? 'Ethereum' : chainId === 56 ? 'BSC' : chainId === 137 ? 'Polygon' : 'Unknown'} network</p>
                         </div>
                         <button
-                          onClick={() => window.location.reload()}
-                          className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded-md text-sm"
+                          onClick={connectWallet}
+                          className="bg-gray-700 text-gray-300 px-3 py-1 rounded-md text-sm"
                         >
-                          Disconnect
+                          Change
                         </button>
                       </div>
                     </div>
                   </div>
                   
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Network Settings</h3>
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <div className="space-y-4">
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            id="ethereum"
-                            name="network"
-                            checked={chainId === 1}
-                            onChange={() => switchNetwork(1)}
-                            className="mr-3"
-                          />
-                          <label htmlFor="ethereum" className="text-white">Ethereum Mainnet</label>
-                        </div>
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            id="bsc"
-                            name="network"
-                            checked={chainId === 56}
-                            onChange={() => switchNetwork(56)}
-                            className="mr-3"
-                          />
-                          <label htmlFor="bsc" className="text-white">Binance Smart Chain</label>
-                        </div>
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            id="polygon"
-                            name="network"
-                            checked={chainId === 137}
-                            onChange={() => switchNetwork(137)}
-                            className="mr-3"
-                          />
-                          <label htmlFor="polygon" className="text-white">Polygon</label>
+                    <h3 className="text-lg font-semibold text-white mb-4">Notifications</h3>
+                    <div className="bg-gray-800 p-4 rounded-lg">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-white">Email Notifications</span>
+                        <div className="relative inline-block w-10 mr-2 align-middle select-none">
+                          <input type="checkbox" name="toggle" id="toggle-1" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" />
+                          <label htmlFor="toggle-1" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-700 cursor-pointer"></label>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Notification Settings</h3>
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <label htmlFor="email-notifications" className="text-white">Email Notifications</label>
-                          <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                            <input
-                              type="checkbox"
-                              id="email-notifications"
-                              className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                            />
-                            <label
-                              htmlFor="email-notifications"
-                              className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-700 cursor-pointer"
-                            ></label>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <label htmlFor="browser-notifications" className="text-white">Browser Notifications</label>
-                          <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                            <input
-                              type="checkbox"
-                              id="browser-notifications"
-                              className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                            />
-                            <label
-                              htmlFor="browser-notifications"
-                              className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-700 cursor-pointer"
-                            ></label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-4">Privacy Settings</h3>
-                    <div className="bg-gray-800 rounded-lg p-4">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <label htmlFor="public-profile" className="text-white">Public Profile</label>
-                          <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                            <input
-                              type="checkbox"
-                              id="public-profile"
-                              className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                              defaultChecked
-                            />
-                            <label
-                              htmlFor="public-profile"
-                              className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-700 cursor-pointer"
-                            ></label>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <label htmlFor="show-nfts" className="text-white">Show NFT Collection</label>
-                          <div className="relative inline-block w-10 mr-2 align-middle select-none">
-                            <input
-                              type="checkbox"
-                              id="show-nfts"
-                              className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                              defaultChecked
-                            />
-                            <label
-                              htmlFor="show-nfts"
-                              className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-700 cursor-pointer"
-                            ></label>
-                          </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-white">Push Notifications</span>
+                        <div className="relative inline-block w-10 mr-2 align-middle select-none">
+                          <input type="checkbox" name="toggle" id="toggle-2" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" />
+                          <label htmlFor="toggle-2" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-700 cursor-pointer"></label>
                         </div>
                       </div>
                     </div>
@@ -629,25 +372,6 @@ export default function Profile() {
           </div>
         )}
       </div>
-      
-      <style jsx>{`
-        .toggle-checkbox:checked {
-          right: 0;
-          border-color: #68D391;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-          background-color: #68D391;
-        }
-        .toggle-checkbox {
-          right: 0;
-          z-index: 1;
-          border-color: #68D391;
-          transition: all 0.3s;
-        }
-        .toggle-label {
-          transition: all 0.3s;
-        }
-      `}</style>
     </div>
   );
 }
