@@ -28,6 +28,7 @@ export default function IndieFund() {
     try {
       setLoading(true);
       const contract = new ethers.Contract(indieFundAddress, IndieFundABI, provider);
+      
       const projectCount = await contract.projectCount();
       
       const projectArray = [];
@@ -88,7 +89,7 @@ export default function IndieFund() {
       
       const tx = await tokenContract.approve(
         indieFundAddress, 
-        ethers.utils.parseEther('1000000') // Approve a large amount
+        ethers.utils.parseEther('10000') // Approve a large amount
       );
       await tx.wait();
       
@@ -293,7 +294,6 @@ export default function IndieFund() {
                         <p className="text-white">{selectedProject.startDate.toLocaleDateString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">En<div></p>
                         <p className="text-sm text-gray-500">End Date</p>
                         <p className="text-white">{selectedProject.endDate.toLocaleDateString()}</p>
                       </div>
@@ -375,8 +375,8 @@ export default function IndieFund() {
                           disabled={!fundAmount || parseFloat(fundAmount) <= 0 || parseFloat(fundAmount) > parseFloat(tokenBalance)}
                           className={`w-full py-2 rounded-md ${
                             !fundAmount || parseFloat(fundAmount) <= 0 || parseFloat(fundAmount) > parseFloat(tokenBalance)
-                              ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                              : 'bg-gradient-to-r from-teal-500 to-blue-500 text-white'
+                            ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-teal-500 to-blue-500 text-white'
                           }`}
                         >
                           Fund Project
