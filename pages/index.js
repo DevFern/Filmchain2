@@ -166,3 +166,80 @@ export default function Home() {
               </div>
               <div className="flex items-center">
                 <div
+<div className="flex items-center">
+                <div className="w-4 h-4 bg-purple-500 rounded-full mr-3"></div>
+                <span className="text-white">16% Development</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-green-500 rounded-full mr-3"></div>
+                <span className="text-white">14% Marketing</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-yellow-500 rounded-full mr-3"></div>
+                <span className="text-white">11% Team</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-red-500 rounded-full mr-3"></div>
+                <span className="text-white">10% Partnerships</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-4 h-4 bg-pink-500 rounded-full mr-3"></div>
+                <span className="text-white">7% Rewards</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Token Information */}
+      <section className="bg-gray-900 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-white mb-8 text-center">FILM Chain Information</h2>
+          
+          <p className="text-gray-400 text-center max-w-3xl mx-auto mb-8">
+            FILM will be released on the basis of BSC platform and fully comply with BEP-20 standard. Support of this standard guarantees the compatibility of the token with third-party services (wallets, exchanges, listings, etc.), and provides easy integration.
+          </p>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-black rounded-lg overflow-hidden">
+              <tbody>
+                <tr className="border-b border-gray-800">
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Name:</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-white">FILM Chain</td>
+                </tr>
+                <tr className="border-b border-gray-800">
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Symbol:</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-white">FILM</td>
+                </tr>
+                <tr className="border-b border-gray-800">
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Standard:</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-white">BEP-20</td>
+                </tr>
+                <tr className="border-b border-gray-800">
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Platform:</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-white">Binance Smart Chain (BSC)</td>
+                </tr>
+                <tr className="border-b border-gray-800">
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Total Supply:</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-white">10,000,000,042 FILM</td>
+                </tr>
+                <tr className="border-b border-gray-800">
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Minimum Investment:</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-white">50 USDT</td>
+                </tr>
+                <tr className="border-b border-gray-800">
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Price:</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-white">1 FILM = 0.042 USDT</td>
+                </tr>
+                <tr className="border-b border-gray-800">
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Accepting:</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-white">BNB, USDT, ETH</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
