@@ -119,123 +119,86 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="bg-gray-900 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white mb-8 text-center">How FILM Chain Works?</h2>
-          <p className="text-gray-400 text-center max-w-3xl mx-auto mb-12">
-            Indie filmmakers and producers create a profile, submit their pitches, and budgetary projections. After an initial screening, the community reviews and crowdfunds their favorite projects using FILM Chain tokens. Projects that reach the minimum financing cap receive funds in four stages, determined by community vote. This keeps investors engaged throughout the project's lifecycle and builds a highly invested community around the film or show.
-          </p>
-          
-          <div className="flex justify-center">
-            <button 
-              onClick={connectWallet}
-              className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-8 py-3 rounded-md text-lg font-medium"
-            >
-              Get Started
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Token Distribution */}
-      <section className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white mb-12 text-center">FILM Chain Token Distribution</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div className="flex justify-center">
-              {/* This would be a chart/graph in a real implementation */}
-              <div className="w-64 h-64 rounded-full bg-gradient-to-r from-teal-500 to-blue-500 flex items-center justify-center">
-                <span className="text-white text-xl font-bold">Token Distribution</span>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-teal-500 rounded-full mr-3"></div>
-                <span className="text-white">22% ICO</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-blue-500 rounded-full mr-3"></div>
-                <span className="text-white">20% Cryptoeconomic Reserves</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-purple-500 rounded-full mr-3"></div>
-                <span className="text-white">16% Development</span>
-              </div>
-              <div className="flex items-center">
-                <div className="flex items-center">
-                <div className="w-4 h-4 bg-purple-500 rounded-full mr-3"></div>
-                <span className="text-white">16% Development</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-green-500 rounded-full mr-3"></div>
-                <span className="text-white">14% Marketing</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-yellow-500 rounded-full mr-3"></div>
-                <span className="text-white">11% Team</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-red-500 rounded-full mr-3"></div>
-                <span className="text-white">10% Partnerships</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-pink-500 rounded-full mr-3"></div>
-                <span className="text-white">7% Rewards</span>
-              </div>
-           </div>
-          </div>
-        </div>
-      </section>
-
       {/* Token Information */}
       <section className="bg-gray-900 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-white mb-8 text-center">FILM Chain Information</h2>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-white mb-4">FILM Token</h2>
+            <p className="text-gray-400 max-w-3xl mx-auto">
+              The FILM token is the native utility token of the FILM Chain ecosystem, powering all transactions and interactions within the platform.
+            </p>
+          </div>
           
-          <p className="text-gray-400 text-center max-w-3xl mx-auto mb-8">
-            FILM will be released on the basis of BSC platform and fully comply with BEP-20 standard. Support of this standard guarantees the compatibility of the token with third-party services (wallets, exchanges, listings, etc.), and provides easy integration.
-          </p>
-          
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-black rounded-lg overflow-hidden">
-              <tbody>
-                <tr className="border-b border-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Name:</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-white">FILM Chain</td>
-                </tr>
-                <tr className="border-b border-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Symbol:</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-white">FILM</td>
-                </tr>
-                <tr className="border-b border-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Standard:</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-white">BEP-20</td>
-                </tr>
-                <tr className="border-b border-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Platform:</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-white">Binance Smart Chain (BSC)</td>
-                </tr>
-                <tr className="border-b border-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Total Supply:</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-white">10,000,000,042 FILM</td>
-                </tr>
-                <tr className="border-b border-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Minimum Investment:</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-white">50 USDT</td>
-                </tr>
-                <tr className="border-b border-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Price:</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-white">1 FILM = 0.042 USDT</td>
-                </tr>
-                <tr className="border-b border-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-400">Accepting:</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-white">BNB, USDT, ETH</td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-6">Token Distribution</h3>
+              <div className="bg-gray-800 p-6 rounded-lg">
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-teal-500 rounded-full mr-3"></div>
+                    <span className="text-white">40% Public Sale</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-blue-500 rounded-full mr-3"></div>
+                    <span className="text-white">20% Team & Advisors</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-indigo-500 rounded-full mr-3"></div>
+                    <span className="text-white">15% Marketing & Partnerships</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-purple-500 rounded-full mr-3"></div>
+                    <span className="text-white">16% Development</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-pink-500 rounded-full mr-3"></div>
+                    <span className="text-white">9% Reserve</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-6">Token Information</h3>
+              <div className="bg-gray-800 p-6 rounded-lg">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-gray-400 text-sm">Name</p>
+                      <p className="text-white">FILM Chain</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Symbol</p>
+                      <p className="text-white">FILM</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Standard</p>
+                      <p className="text-white">ERC-20</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Platform</p>
+                      <p className="text-white">Ethereum</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Total Supply</p>
+                      <p className="text-white">100,000,000 FILM</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Min. Investment</p>
+                      <p className="text-white">0.1 ETH</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Price</p>
+                      <p className="text-white">1 FILM = 0.0001 ETH</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm">Accepted Currencies</p>
+                      <p className="text-white">ETH, BNB, USDT</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
