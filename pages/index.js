@@ -165,8 +165,7 @@ export default function Home() {
                 <span className="text-white">16% Development</span>
               </div>
               <div className="flex items-center">
-                <div
-<div className="flex items-center">
+                <div className="flex items-center">
                 <div className="w-4 h-4 bg-purple-500 rounded-full mr-3"></div>
                 <span className="text-white">16% Development</span>
               </div>
