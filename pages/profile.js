@@ -237,8 +237,10 @@ export default function Profile() {
                 <h2 className="text-2xl font-bold text-white mb-6">Account Overview</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
+  <div>
+    <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
+    // rest of your code
+  </div>
                     <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
                     <div className="bg-gray-800 rounded-lg p-4">
                       {loading ? (
