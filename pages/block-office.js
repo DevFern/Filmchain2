@@ -217,4 +217,152 @@ export default function BlockOffice() {
                     ) : (
                       <button
                         onClick={purchaseSubscription}
+                        className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-md"<button
+                        onClick={purchaseSubscription}
                         className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-md"
+                      >
+                        Subscribe Now
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <h2 className="text-2xl font-bold text-white mb-6">Featured Films</h2>
+                
+                {loading ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-400">Loading films...</p>
+                  </div>
+                ) : films.length === 0 ? (
+                  <div className="text-center py-12 bg-gray-900 rounded-lg">
+                    <p className="text-gray-400">No films available</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {films.map((film) => (
+                      <div 
+                        key={film.id} 
+                        className={`bg-gray-900 rounded-lg overflow-hidden cursor-pointer transition duration-200 ${selectedFilm?.id === film.id ? 'ring-2 ring-teal-500' : ''}`}
+                        onClick={() => handleFilmSelect(film)}
+                      >
+                        <div className="aspect-w-16 aspect-h-9 bg-gray-800">
+                          {film.ipfsHash && (
+                            <img 
+                              src={`https://ipfs.io/ipfs/${film.ipfsHash}`} 
+                              alt={film.title} 
+                              className="object-cover w-full h-full"
+                            />
+                          )}
+                        </div>
+                        <div className="p-4">
+                          <h3 className="text-lg font-bold text-white mb-2">{film.title}</h3>
+                          <p className="text-gray-400 text-sm mb-4 line-clamp-2">{film.description}</p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-teal-400 font-medium">{film.price} FILM</span>
+                            {hasSubscription ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  getFilmContent(film);
+                                }}
+                                className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-4 py-2 rounded-md text-sm"
+                              >
+                                Watch Now
+                              </button>
+                            ) : (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (parseFloat(tokenAllowance) < parseFloat(film.price)) {
+                                    handleApproveTokens();
+                                  } else {
+                                    purchaseFilm(film);
+                                  }
+                                }}
+                                className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-4 py-2 rounded-md text-sm"
+                              >
+                                {parseFloat(tokenAllowance) < parseFloat(film.price) ? 'Approve' : 'Purchase'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <div>
+                {selectedFilm ? (
+                  <div className="bg-gray-900 rounded-lg overflow-hidden sticky top-4">
+                    <div className="aspect-w-16 aspect-h-9 bg-gray-800">
+                      {selectedFilm.ipfsHash && (
+                        <img 
+                          src={`https://ipfs.io/ipfs/${selectedFilm.ipfsHash}`} 
+                          alt={selectedFilm.title} 
+                          className="object-cover w-full h-full"
+                        />
+                      )}
+                    </div>
+                    <div className="p-6">
+                      <h2 className="text-2xl font-bold text-white mb-2">{selectedFilm.title}</h2>
+                      <p className="text-gray-400 mb-6">{selectedFilm.description}</p>
+                      
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-white mb-3">Details</h3>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Creator</span>
+                            <span className="text-white">{selectedFilm.creator.substring(0, 6)}...{selectedFilm.creator.substring(selectedFilm.creator.length - 4)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Added On</span>
+                            <span className="text-white">{selectedFilm.createdAt.toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-400">Price</span>
+                            <span className="text-teal-400 font-medium">{selectedFilm.price} FILM</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {hasSubscription ? (
+                        <button
+                          onClick={() => getFilmContent(selectedFilm)}
+                          className="w-full bg-gradient-to-r from-teal-500 to-blue-500 text-white py-3 rounded-md font-medium"
+                        >
+                          Watch Now
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            if (parseFloat(tokenAllowance) < parseFloat(selectedFilm.price)) {
+                              handleApproveTokens();
+                            } else {
+                              purchaseFilm(selectedFilm);
+                            }
+                          }}
+                          className="w-full bg-gradient-to-r from-teal-500 to-blue-500 text-white py-3 rounded-md font-medium"
+                        >
+                          {parseFloat(tokenAllowance) < parseFloat(selectedFilm.price) ? 'Approve FILM Tokens' : 'Purchase Film'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-gray-900 rounded-lg p-6 text-center">
+                    <p className="text-gray-400">Select a film to view details</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
