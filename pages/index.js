@@ -185,7 +185,7 @@ export default function Home() {
                 <div className="w-4 h-4 bg-pink-500 rounded-full mr-3"></div>
                 <span className="text-white">7% Rewards</span>
               </div>
-            </div>
+           </div>
           </div>
         </div>
       </section>
