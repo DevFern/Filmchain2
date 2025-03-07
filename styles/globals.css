@@ -69,3 +69,17 @@ a {
 ::-webkit-scrollbar-thumb:hover {
   background: #1a2151;
 }
+/* styles/globals.css additions */
+@media (max-width: 640px) {
+  .film-card {
+    @apply flex-col;
+  }
+  
+  .film-stats {
+    @apply grid grid-cols-2 gap-2;
+  }
+  
+  .funding-progress {
+    @apply mt-4 w-full;
+  }
+}
