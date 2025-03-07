@@ -1,4 +1,5 @@
 // pages/talent-marketplace.js
+import React, { useState } from 'react';
 export default function TalentMarketplace() {
   const [talentProfiles, setTalentProfiles] = useState([]);
   const [filters, setFilters] = useState({
