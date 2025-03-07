@@ -1,4 +1,5 @@
 // pages/nft-creator.js
+import React, { useState } from 'react';
 export default function NFTCreator() {
   const [nftType, setNftType] = useState('artwork'); // artwork, collectible, ticket, royalty
   const [royaltyPercentage, setRoyaltyPercentage] = useState(10);
