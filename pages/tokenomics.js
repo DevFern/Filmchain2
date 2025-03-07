@@ -1,4 +1,5 @@
 // pages/tokenomics.js
+import React, { useState } from 'react';
 export default function Tokenomics() {
   const [tokenMetrics, setTokenMetrics] = useState({
     price: 0,
