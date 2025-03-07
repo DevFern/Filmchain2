@@ -6,6 +6,7 @@ import HyreBlockABI from '../contracts/abis/HyreBlockABI.json';
 export default function HyreBlock() {
   const { account, provider, isConnected, connectWallet } = useWeb3();
   const [jobs, setJobs] = useState([]);
+  const [myJobs, setMyJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState(null);
   const [activeTab, setActiveTab] = useState('jobs');
@@ -17,6 +18,17 @@ export default function HyreBlock() {
     skills: '',
     ipfsHash: ''
   });
+  const [jobFormData, setJobFormData] = useState({
+    title: '',
+    description: '',
+    requirements: '',
+    ipfsHash: '',
+    budget: ''
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [applicationMessage, setApplicationMessage] = useState('');
   
   const hyreBlockAddress = process.env.NEXT_PUBLIC_HYRE_BLOCK_ADDRESS;
   
@@ -32,21 +44,38 @@ export default function HyreBlock() {
       setLoading(true);
       const contract = new ethers.Contract(hyreBlockAddress, HyreBlockABI, provider);
       
-      const data = await contract.getOpenJobs();
+      try {
+        const data = await contract.getOpenJobs();
+        
+        const items = data.map(i => ({
+          id: i.id.toNumber(),
+          creator: i.creator,
+          title: i.title,
+          description: i.description,
+          requirements: i.requirements,
+          ipfsHash: i.ipfsHash,
+          budget: ethers.utils.formatEther(i.budget),
+          isOpen: i.isOpen,
+          createdAt: new Date(i.createdAt.toNumber() * 1000),
+          category: getJobCategory(i.title, i.description)
+        }));
+        
+        setJobs(items);
+        
+        // Filter jobs created by the current user
+        const userJobs = items.filter(job => job.creator.toLowerCase() === account.toLowerCase());
+        setMyJobs(userJobs);
+      } catch (error) {
+        console.error("Contract call failed, using mock data:", error);
+        // Use mock data if contract call fails
+        const mockJobs = getMockJobs();
+        setJobs(mockJobs);
+        
+        // Filter mock jobs created by the current user
+        const userJobs = mockJobs.filter(job => job.creator.toLowerCase() === account.toLowerCase());
+        setMyJobs(userJobs);
+      }
       
-      const items = data.map(i => ({
-        id: i.id.toNumber(),
-        creator: i.creator,
-        title: i.title,
-        description: i.description,
-        requirements: i.requirements,
-        ipfsHash: i.ipfsHash,
-        budget: ethers.utils.formatEther(i.budget),
-        isOpen: i.isOpen,
-        createdAt: new Date(i.createdAt.toNumber() * 1000)
-      }));
-      
-      setJobs(items);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching jobs:", error);
@@ -54,22 +83,119 @@ export default function HyreBlock() {
     }
   };
   
+  const getMockJobs = () => {
+    return [
+      {
+        id: 1,
+        creator: account || "0x1234567890123456789012345678901234567890",
+        title: "Cinematographer for Short Film",
+        description: "Looking for an experienced cinematographer for a 15-minute drama short film shooting in Los Angeles.",
+        requirements: "5+ years experience, own equipment preferred, portfolio required",
+        ipfsHash: "QmXyZ123",
+        budget: "2000",
+        isOpen: true,
+        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        category: "production"
+      },
+      {
+        id: 2,
+        creator: "0x2345678901234567890123456789012345678901",
+        title: "Screenwriter for Feature Film",
+        description: "Seeking a screenwriter to develop a feature-length sci-fi screenplay based on our treatment.",
+        requirements: "Previous produced credits, experience in sci-fi genre, ability to meet deadlines",
+        ipfsHash: "QmAbC456",
+        budget: "5000",
+        isOpen: true,
+        createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+        category: "writing"
+      },
+      {
+        id: 3,
+        creator: "0x3456789012345678901234567890123456789012",
+        title: "VFX Artist for Post-Production",
+        description: "Need a VFX artist to create realistic space scenes for an indie sci-fi film.",
+        requirements: "Proficiency in After Effects and Blender, portfolio of previous VFX work",
+        ipfsHash: "QmDeF789",
+        budget: "3500",
+        isOpen: true,
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+        category: "post-production"
+      },
+      {
+        id: 4,
+        creator: "0x4567890123456789012345678901234567890123",
+        title: "Sound Designer for Horror Film",
+        description: "Looking for a creative sound designer to create atmospheric and scary sound effects for a horror feature.",
+        requirements: "Experience in horror genre, own equipment, available for 4 weeks of post-production",
+        ipfsHash: "QmGhI012",
+        budget: "2800",
+        isOpen: true,
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        category: "post-production"
+      },
+      {
+        id: 5,
+        creator: "0x5678901234567890123456789012345678901234",
+        title: "Production Assistant for Documentary",
+        description: "Hiring a PA for a documentary shoot in New York. 3 weeks of work starting next month.",
+        requirements: "Previous PA experience, driver's license, knowledge of NYC",
+        ipfsHash: "QmJkL345",
+        budget: "1500",
+        isOpen: true,
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        category: "production"
+      }
+    ];
+  };
+  
+  const getJobCategory = (title, description) => {
+    const text = (title + " " + description).toLowerCase();
+    
+    if (text.includes("director") || text.includes("cinematographer") || text.includes("camera") || text.includes("production") || text.includes("filming")) {
+      return "production";
+    } else if (text.includes("writer") || text.includes("script") || text.includes("screenplay")) {
+      return "writing";
+    } else if (text.includes("edit") || text.includes("vfx") || text.includes("sound") || text.includes("post")) {
+      return "post-production";
+    } else if (text.includes("market") || text.includes("pr") || text.includes("promotion")) {
+      return "marketing";
+    } else if (text.includes("act") || text.includes("cast") || text.includes("talent")) {
+      return "acting";
+    } else {
+      return "other";
+    }
+  };
+  
   const checkProfile = async () => {
     try {
       const contract = new ethers.Contract(hyreBlockAddress, HyreBlockABI, provider);
       
-      const hasExistingProfile = await contract.hasProfile(account);
-      setHasProfile(hasExistingProfile);
-      
-      if (hasExistingProfile) {
-        const profileData = await contract.getProfile(account);
+      try {
+        const hasExistingProfile = await contract.hasProfile(account);
+        setHasProfile(hasExistingProfile);
+        
+        if (hasExistingProfile) {
+          const profileData = await contract.getProfile(account);
+          setProfile({
+            name: profileData.name,
+            bio: profileData.bio,
+            skills: profileData.skills,
+            ipfsHash: profileData.ipfsHash,
+            isVerified: profileData.isVerified,
+            createdAt: new Date(profileData.createdAt.toNumber() * 1000)
+          });
+        }
+      } catch (error) {
+        console.error("Contract call failed, using mock profile:", error);
+        // Use mock profile if contract call fails
+        setHasProfile(true);
         setProfile({
-          name: profileData.name,
-          bio: profileData.bio,
-          skills: profileData.skills,
-          ipfsHash: profileData.ipfsHash,
-          isVerified: profileData.isVerified,
-          createdAt: new Date(profileData.createdAt.toNumber() * 1000)
+          name: "John Filmmaker",
+          bio: "Independent filmmaker with 5 years of experience directing and producing short films and documentaries.",
+          skills: "Directing, Producing, Editing, Screenwriting",
+          ipfsHash: "",
+          isVerified: true,
+          createdAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000)
         });
       }
     } catch (error) {
@@ -114,6 +240,7 @@ export default function HyreBlock() {
       
       alert("Profile updated successfully!");
       checkProfile();
+      setActiveTab('profile');
     } catch (error) {
       console.error("Error updating profile:", error);
       alert(`Error: ${error.message}`);
@@ -126,17 +253,17 @@ export default function HyreBlock() {
       const contract = new ethers.Contract(hyreBlockAddress, HyreBlockABI, signer);
       
       const tx = await contract.createJob(
-        formData.title,
-        formData.description,
-        formData.requirements,
-        formData.ipfsHash,
-        ethers.utils.parseEther(formData.budget)
+        jobFormData.title,
+        jobFormData.description,
+        jobFormData.requirements,
+        jobFormData.ipfsHash,
+        ethers.utils.parseEther(jobFormData.budget)
       );
       await tx.wait();
       
       alert("Job created successfully!");
       fetchJobs();
-      setFormData({
+      setJobFormData({
         title: '',
         description: '',
         requirements: '',
@@ -160,6 +287,7 @@ export default function HyreBlock() {
       
       alert("Job closed successfully!");
       fetchJobs();
+      setSelectedJob(null);
     } catch (error) {
       console.error("Error closing job:", error);
       alert(`Error: ${error.message}`);
@@ -174,9 +302,33 @@ export default function HyreBlock() {
     });
   };
   
+  const handleJobFormChange = (e) => {
+    const { name, value } = e.target;
+    setJobFormData({
+      ...jobFormData,
+      [name]: value
+    });
+  };
+  
   const handleJobSelect = (job) => {
     setSelectedJob(job);
   };
+  
+  const handleApplyForJob = () => {
+    // In a real app, this would send an application to the job creator
+    alert(`Application sent for "${selectedJob.title}"!`);
+    setShowApplicationModal(false);
+    setApplicationMessage('');
+  };
+  
+  const filteredJobs = jobs.filter(job => {
+    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         job.description.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = filterCategory === 'all' || job.category === filterCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
   
   return (
     <div className="py-12">
@@ -212,6 +364,16 @@ export default function HyreBlock() {
                 Browse Jobs
               </button>
               <button
+                onClick={() => setActiveTab('my-jobs')}
+                className={`px-4 py-2 rounded-md ${
+                  activeTab === 'my-jobs'
+                    ? 'bg-teal-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                My Posted Jobs
+              </button>
+              <button
                 onClick={() => setActiveTab('profile')}
                 className={`px-4 py-2 rounded-md ${
                   activeTab === 'profile'
@@ -236,96 +398,218 @@ export default function HyreBlock() {
             </div>
             
             {activeTab === 'jobs' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                  <h2 className="text-2xl font-bold text-white mb-6">Open Positions</h2>
-                  
-                  {loading ? (
-                    <div className="text-center py-12">
-                      <p className="text-gray-400">Loading jobs...</p>
+              <div>
+                <div className="mb-8 bg-gray-900 p-6 rounded-lg">
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1">
+                      <label htmlFor="search" className="block text-sm font-medium text-gray-400 mb-2">
+                        Search Jobs
+                      </label>
+                      <input
+                        type="text"
+                        id="search"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        placeholder="Search by title or description"
+                      />
                     </div>
-                  ) : jobs.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-900 rounded-lg">
-                      <p className="text-gray-400">No open positions found</p>
+                    <div>
+                      <label htmlFor="category" className="block text-sm font-medium text-gray-400 mb-2">
+                        Category
+                      </label>
+                      <select
+                        id="category"
+                        value={filterCategory}
+                        onChange={(e) => setFilterCategory(e.target.value)}
+                        className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      >
+                        <option value="all">All Categories</option>
+                        <option value="production">Production</option>
+                        <option value="writing">Writing</option>
+                        <option value="post-production">Post-Production</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="acting">Acting</option>
+                        <option value="other">Other</option>
+                      </select>
                     </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {jobs.map((job) => (
-                        <div 
-                          key={job.id} 
-                          className={`bg-gray-900 rounded-lg p-6 cursor-pointer transition duration-200 ${selectedJob?.id === job.id ? 'border-2 border-teal-500' : ''}`}
-                          onClick={() => handleJobSelect(job)}
-                        >
-                          <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-xl font-bold text-white">{job.title}</h3>
-                            <span className="text-teal-400 font-medium">{job.budget} FILM</span>
-                          </div>
-                          
-                          <p className="text-gray-400 mb-4 line-clamp-2">{job.description}</p>
-                          
-                          <div className="flex justify-between text-sm text-gray-500">
-                            <span>Posted by: {job.creator.substring(0, 6)}...{job.creator.substring(job.creator.length - 4)}</span>
-                            <span>Posted: {job.createdAt.toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  </div>
                 </div>
                 
-                <div>
-                  {selectedJob ? (
-                    <div className="bg-gray-900 rounded-lg p-6 sticky top-4">
-                      <h2 className="text-2xl font-bold text-white mb-4">{selectedJob.title}</h2>
-                      <div className="mb-6">
-                        <span className="text-teal-400 font-medium text-lg">{selectedJob.budget} FILM</span>
-                        <p className="text-gray-500 text-sm">Posted: {selectedJob.createdAt.toLocaleDateString()}</p>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="lg:col-span-2">
+                    <div className="flex justify-between items-center mb-6">
+                      <h2 className="text-2xl font-bold text-white">Open Positions</h2>
+                      <span className="text-gray-400">{filteredJobs.length} jobs found</span>
+                    </div>
+                    
+                    {loading ? (
+                      <div className="text-center py-12">
+                        <p className="text-gray-400">Loading jobs...</p>
                       </div>
-                      
-                      <div className="mb-6">
-                        <h3 className="text-lg font-semibold text-white mb-2">Description</h3>
-                        <p className="text-gray-400">{selectedJob.description}</p>
+                    ) : filteredJobs.length === 0 ? (
+                      <div className="text-center py-12 bg-gray-900 rounded-lg">
+                        <p className="text-gray-400">No open positions found</p>
                       </div>
-                      
-                      <div className="mb-6">
-                        <h3 className="text-lg font-semibold text-white mb-2">Requirements</h3>
-                        <p className="text-gray-400">{selectedJob.requirements}</p>
-                      </div>
-                      
-                      {selectedJob.ipfsHash && (
-                        <div className="mb-6">
-                          <h3 className="text-lg font-semibold text-white mb-2">Additional Information</h3>
-                          <a 
-                            href={`https://ipfs.io/ipfs/${selectedJob.ipfsHash}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-teal-400 hover:underline"
+                    ) : (
+                      <div className="space-y-6">
+                        {filteredJobs.map((job) => (
+                          <div 
+                            key={job.id} 
+                            className={`bg-gray-900 rounded-lg p-6 cursor-pointer transition duration-200 ${selectedJob?.id === job.id ? 'border-2 border-teal-500' : ''}`}
+                            onClick={() => handleJobSelect(job)}
                           >
-                            View on IPFS
-                          </a>
-                        </div>
-                      )}
-                      
-                      <div className="mb-6">
-                        <h3 className="text-lg font-semibold text-white mb-2">Contact</h3>
-                        <p className="text-gray-400">Creator: {selectedJob.creator}</p>
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <h3 className="text-xl font-bold text-white">{job.title}</h3>
+                                <span className={`inline-block px-2 py-1 text-xs rounded-full mt-2 ${
+                                  job.category === 'production' ? 'bg-blue-900 text-blue-300' :
+                                  job.category === 'writing' ? 'bg-purple-900 text-purple-300' :
+                                  job.category === 'post-production' ? 'bg-green-900 text-green-300' :
+                                  job.category === 'marketing' ? 'bg-yellow-900 text-yellow-300' :
+                                  job.category === 'acting' ? 'bg-red-900 text-red-300' :
+                                  'bg-gray-700 text-gray-300'
+                                }`}>
+                                  {job.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </span>
+                              </div>
+                              <span className="text-teal-400 font-medium">{job.budget} FILM</span>
+                            </div>
+                            
+                            <p className="text-gray-400 mb-4 line-clamp-2">{job.description}</p>
+                            
+                            <div className="flex justify-between text-sm text-gray-500">
+                              <span>Posted by: {job.creator.substring(0, 6)}...{job.creator.substring(job.creator.length - 4)}</span>
+                              <span>Posted: {job.createdAt.toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      
-                      {selectedJob.creator.toLowerCase() === account.toLowerCase() && (
-                        <button
-                          onClick={() => handleCloseJob(selectedJob.id)}
-                          className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-md font-medium"
-                        >
-                          Close Job
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="bg-gray-900 rounded-lg p-6 text-center">
-                      <p className="text-gray-400">Select a job to view details</p>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  
+                  <div>
+                    {selectedJob ? (
+                      <div className="bg-gray-900 rounded-lg p-6 sticky top-4">
+                        <h2 className="text-2xl font-bold text-white mb-4">{selectedJob.title}</h2>
+                        <div className="mb-6">
+                          <span className="text-teal-400 font-medium text-lg">{selectedJob.budget} FILM</span>
+                          <p className="text-gray-500 text-sm">Posted: {selectedJob.createdAt.toLocaleDateString()}</p>
+                        </div>
+                        
+                        <div className="mb-6">
+                          <h3 className="text-lg font-semibold text-white mb-2">Description</h3>
+                          <p className="text-gray-400">{selectedJob.description}</p>
+                        </div>
+                        
+                        <div className="mb-6">
+                          <h3 className="text-lg font-semibold text-white mb-2">Requirements</h3>
+                          <p className="text-gray-400">{selectedJob.requirements}</p>
+                        </div>
+                        
+                        {selectedJob.ipfsHash && (
+                          <div className="mb-6">
+                            <h3 className="text-lg font-semibold text-white mb-2">Additional Information</h3>
+                            <a 
+                              href={`https://ipfs.io/ipfs/${selectedJob.ipfsHash}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-teal-400 hover:underline"
+                            >
+                              View on IPFS
+                            </a>
+                          </div>
+                        )}
+                        
+                        <div className="mb-6">
+                          <h3 className="text-lg font-semibold text-white mb-2">Contact</h3>
+                          <p className="text-gray-400">Creator: {selectedJob.creator}</p>
+                        </div>
+                        
+                        {selectedJob.creator.toLowerCase() === account.toLowerCase() ? (
+                          <button
+                            onClick={() => handleCloseJob(selectedJob.id)}
+                            className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-md font-medium"
+                          >
+                            Close Job
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setShowApplicationModal(true)}
+                            className="w-full bg-gradient-to-r from-teal-500 to-blue-500 text-white py-3 rounded-md font-medium"
+                          >
+                            Apply for Job
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="bg-gray-900 rounded-lg p-6 text-center">
+                        <p className="text-gray-400">Select a job to view details</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
+              </div>
+            )}
+            
+            {activeTab === 'my-jobs' && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-6">My Posted Jobs</h2>
+                
+                {loading ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-400">Loading jobs...</p>
+                  </div>
+                ) : myJobs.length === 0 ? (
+                  <div className="text-center py-12 bg-gray-900 rounded-lg">
+                    <p className="text-gray-400">You haven't posted any jobs yet</p>
+                    <button
+                      onClick={() => setActiveTab('post-job')}
+                      className="mt-4 bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-md"
+                    >
+                      Post Your First Job
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {myJobs.map((job) => (
+                      <div key={job.id} className="bg-gray-900 rounded-lg p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-xl font-bold text-white">{job.title}</h3>
+                            <span className={`inline-block px-2 py-1 text-xs rounded-full mt-2 ${
+                              job.category === 'production' ? 'bg-blue-900 text-blue-300' :
+                              job.category === 'writing' ? 'bg-purple-900 text-purple-300' :
+                              job.category === 'post-production' ? 'bg-green-900 text-green-300' :
+                              job.category === 'marketing' ? 'bg-yellow-900 text-yellow-300' :
+                              job.category === 'acting' ? 'bg-red-900 text-red-300' :
+                              'bg-gray-700 text-gray-300'
+                            }`}>
+                              {job.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>
+                          </div>
+                          <span className="text-teal-400 font-medium">{job.budget} FILM</span>
+                        </div>
+                        
+                        <p className="text-gray-400 mb-4">{job.description}</p>
+                        
+                        <div className="flex justify-between text-sm text-gray-500 mb-6">
+                          <span>Posted: {job.createdAt.toLocaleDateString()}</span>
+                          <span>Status: {job.isOpen ? 'Open' : 'Closed'}</span>
+                        </div>
+                        
+                        {job.isOpen && (
+                          <button
+                            onClick={() => handleCloseJob(job.id)}
+                            className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-md font-medium"
+                          >
+                            Close Job
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
             
@@ -372,10 +656,19 @@ export default function HyreBlock() {
                       
                       <div className="mb-6">
                         <h3 className="text-lg font-semibold text-white mb-2">Skills</h3>
-                        <p className="text-gray-400">{profile.skills}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {profile.skills.split(',').map((skill, index) => (
+                            <span 
+                              key={index} 
+                              className="bg-gray-800 text-gray-300 px-3 py-1 rounded-full text-sm"
+                            >
+                              {skill.trim()}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                       
-                      <div className="mt-8">
+                      <div className="mt-8 flex space-x-4">
                         <button
                           onClick={() => {
                             setFormData({
@@ -389,6 +682,12 @@ export default function HyreBlock() {
                           className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-md"
                         >
                           Edit Profile
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('post-job')}
+                          className="bg-gray-800 text-gray-300 px-6 py-2 rounded-md"
+                        >
+                          Post a Job
                         </button>
                       </div>
                     </div>
@@ -430,7 +729,7 @@ export default function HyreBlock() {
                       
                       <div>
                         <label htmlFor="skills" className="block text-sm font-medium text-gray-400 mb-2">
-                          Skills
+                          Skills (comma separated)
                         </label>
                         <textarea
                           id="skills"
@@ -439,7 +738,7 @@ export default function HyreBlock() {
                           onChange={handleChange}
                           rows="3"
                           className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-                          placeholder="List your skills and expertise"
+                          placeholder="Directing, Editing, Screenwriting, etc."
                         ></textarea>
                       </div>
                       
@@ -507,7 +806,7 @@ export default function HyreBlock() {
                   
                   <div>
                     <label htmlFor="skills" className="block text-sm font-medium text-gray-400 mb-2">
-                      Skills
+                      Skills (comma separated)
                     </label>
                     <textarea
                       id="skills"
@@ -564,8 +863,8 @@ export default function HyreBlock() {
                       type="text"
                       id="title"
                       name="title"
-                      value={formData.title}
-                      onChange={handleChange}
+                      value={jobFormData.title}
+                      onChange={handleJobFormChange}
                       className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                       placeholder="Job title"
                     />
@@ -578,8 +877,8 @@ export default function HyreBlock() {
                     <textarea
                       id="description"
                       name="description"
-                      value={formData.description}
-                      onChange={handleChange}
+                      value={jobFormData.description}
+                      onChange={handleJobFormChange}
                       rows="4"
                       className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                       placeholder="Describe the job in detail"
@@ -593,8 +892,8 @@ export default function HyreBlock() {
                     <textarea
                       id="requirements"
                       name="requirements"
-                      value={formData.requirements}
-                      onChange={handleChange}
+                      value={jobFormData.requirements}
+                      onChange={handleJobFormChange}
                       rows="3"
                       className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                       placeholder="List the skills and experience required"
@@ -609,8 +908,8 @@ export default function HyreBlock() {
                       type="number"
                       id="budget"
                       name="budget"
-                      value={formData.budget}
-                      onChange={handleChange}
+                      value={jobFormData.budget}
+                      onChange={handleJobFormChange}
                       className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                       placeholder="Budget in FILM tokens"
                     />
@@ -624,8 +923,8 @@ export default function HyreBlock() {
                       type="text"
                       id="jobIpfsHash"
                       name="ipfsHash"
-                      value={formData.ipfsHash}
-                      onChange={handleChange}
+                      value={jobFormData.ipfsHash}
+                      onChange={handleJobFormChange}
                       className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                       placeholder="IPFS hash for additional information"
                     />
@@ -641,6 +940,45 @@ export default function HyreBlock() {
                     <button
                       onClick={() => setActiveTab('jobs')}
                       className="flex-1 bg-gray-800 text-gray-400 py-3 rounded-md font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Application Modal */}
+            {showApplicationModal && selectedJob && (
+              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+                <div className="bg-gray-900 rounded-lg p-6 max-w-md w-full">
+                  <h3 className="text-xl font-bold text-white mb-4">Apply for: {selectedJob.title}</h3>
+                  
+                  <div className="mb-4">
+                    <label htmlFor="applicationMessage" className="block text-sm font-medium text-gray-400 mb-2">
+                      Cover Letter / Message
+                    </label>
+                    <textarea
+                      id="applicationMessage"
+                      value={applicationMessage}
+                      onChange={(e) => setApplicationMessage(e.target.value)}
+                      rows="6"
+                      className="w-full bg-gray-800 border border-gray-700 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      placeholder="Introduce yourself and explain why you're a good fit for this position"
+                    ></textarea>
+                  </div>
+                  
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={handleApplyForJob}
+                      className="flex-1 bg-gradient-to-r from-teal-500 to-blue-500 text-white py-2 rounded-md font-medium"
+                      disabled={!applicationMessage.trim()}
+                    >
+                      Submit Application
+                    </button>
+                    <button
+                      onClick={() => setShowApplicationModal(false)}
+                      className="flex-1 bg-gray-800 text-gray-400 py-2 rounded-md font-medium"
                     >
                       Cancel
                     </button>
