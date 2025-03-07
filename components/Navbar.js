@@ -11,7 +11,6 @@ const navigation = [
   { name: 'HyreBlock', href: '/hyre-block' },
   { name: 'BlockOffice', href: '/block-office' },
   { name: 'NFTMarket', href: '/nft-market' },
-  { name: 'Tokenomics', href: '/tokenomics' },
 ];
 
 export default function Navbar() {
