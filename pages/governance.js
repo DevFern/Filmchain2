@@ -1,4 +1,5 @@
 // pages/governance.js
+import React, { useState } from 'react';
 export default function Governance() {
   const [activeProposals, setActiveProposals] = useState([]);
   const [pastProposals, setPastProposals] = useState([]);
