@@ -1,4 +1,5 @@
 // pages/watch/[id].js
+import React, { useState } from 'react';
 export default function WatchFilm() {
   const [film, setFilm] = useState(null);
   const [hasAccess, setHasAccess] = useState(false);
