@@ -5,8 +5,6 @@ const nextConfig = {
     domains: ['ipfs.io'],
     unoptimized: true,
   },
-  // Important for Netlify deployment
-  target: 'serverless',
   // Ensure trailing slashes are handled correctly
   trailingSlash: true,
   // Disable source maps in production for better performance
