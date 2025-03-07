@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useWeb3 } from './Web3Provider';
 import { Disclosure } from '@headlessui/react';
-import { MenuIcon, XIcon } from '@heroicons/react/outline';
+import { Bars3Icon as MenuIcon, XMarkIcon as XIcon } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Home', href: '/' },
