@@ -1,3 +1,1619 @@
-{
-  "abi": []
-}
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "applicationId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "applicant",
+        "type": "address"
+      }
+    ],
+    "name": "ApplicationSubmitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "applicationId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "applicant",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum HyreBlock.ApplicationStatus",
+        "name": "status",
+        "type": "uint8"
+      }
+    ],
+    "name": "ApplicationStatusChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "contractId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "employer",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "professional",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "ContractCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "contractId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum HyreBlock.ContractStatus",
+        "name": "status",
+        "type": "uint8"
+      }
+    ],
+    "name": "ContractStatusChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "contractId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "professional",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "FundsReleased",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "employer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "title",
+        "type": "string"
+      }
+    ],
+    "name": "JobCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "jobId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum HyreBlock.JobStatus",
+        "name": "status",
+        "type": "uint8"
+      }
+    ],
+    "name": "JobStatusChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "profileId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "professional",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "name": "ProfileCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "profileId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "professional",
+        "type": "address"
+      }
+    ],
+    "name": "ProfileUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "profileId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "reviewer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "rating",
+        "type": "uint256"
+      }
+    ],
+    "name": "ReviewSubmitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Paused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "Unpaused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "previousAdminRole",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "newAdminRole",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RoleAdminChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "RoleGranted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      }
+    ],
+    "name": "RoleRevoked",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_filmToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_admin",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_bio",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_skills",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_experience",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_education",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_portfolioUrl",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_imageUrl",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_hourlyRate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum HyreBlock.ProfessionalCategory",
+        "name": "_category",
+        "type": "uint8"
+      }
+    ],
+    "name": "createProfile",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_profileId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_bio",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_skills",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_experience",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_education",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_portfolioUrl",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_imageUrl",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_hourlyRate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum HyreBlock.ProfessionalCategory",
+        "name": "_category",
+        "type": "uint8"
+      }
+    ],
+    "name": "updateProfile",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_title",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_description",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_budget",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_deadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum HyreBlock.JobType",
+        "name": "_jobType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "enum HyreBlock.ProfessionalCategory",
+        "name": "_category",
+        "type": "uint8"
+      },
+      {
+        "internalType": "string",
+        "name": "_location",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_requirements",
+        "type": "string"
+      }
+    ],
+    "name": "createJob",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_coverLetter",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_proposedRate",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_estimatedTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "applyForJob",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_applicationId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum HyreBlock.ApplicationStatus",
+        "name": "_status",
+        "type": "uint8"
+      }
+    ],
+    "name": "updateApplicationStatus",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_applicationId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_duration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_terms",
+        "type": "string"
+      }
+    ],
+    "name": "createContract",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_contractId",
+        "type": "uint256"
+      }
+    ],
+    "name": "acceptContract",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_contractId",
+        "type": "uint256"
+      }
+    ],
+    "name": "rejectContract",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_contractId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_deliverables",
+        "type": "string"
+      }
+    ],
+    "name": "submitWork",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_contractId",
+        "type": "uint256"
+      }
+    ],
+    "name": "approveWork",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_contractId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_reason",
+        "type": "string"
+      }
+    ],
+    "name": "requestRevision",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_profileId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_rating",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "_comment",
+        "type": "string"
+      }
+    ],
+    "name": "reviewProfessional",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_profileId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getProfile",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "professional",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "bio",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "skills",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "experience",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "education",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "portfolioUrl",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "imageUrl",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "hourlyRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalRating",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ratingCount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "updatedAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum HyreBlock.ProfessionalCategory",
+            "name": "category",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bool",
+            "name": "isVerified",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct HyreBlock.Profile",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getJob",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "employer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "budget",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "deadline",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum HyreBlock.JobType",
+            "name": "jobType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum HyreBlock.ProfessionalCategory",
+            "name": "category",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "location",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "requirements",
+            "type": "string"
+          },
+          {
+            "internalType": "enum HyreBlock.JobStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "updatedAt",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct HyreBlock.Job",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_applicationId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getApplication",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "jobId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "applicant",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "coverLetter",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "proposedRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "estimatedTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum HyreBlock.ApplicationStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "updatedAt",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct HyreBlock.Application",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_contractId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getContract",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "jobId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "applicationId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "employer",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "professional",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "duration",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "terms",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "deliverables",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "revisionRequests",
+            "type": "string"
+          },
+          {
+            "internalType": "enum HyreBlock.ContractStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "updatedAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "completedAt",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct HyreBlock.Contract",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_profileId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getProfileReviews",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "reviewer",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rating",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "comment",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct HyreBlock.Review[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllProfiles",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "professional",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "bio",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "skills",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "experience",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "education",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "portfolioUrl",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "imageUrl",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "hourlyRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalRating",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ratingCount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "updatedAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum HyreBlock.ProfessionalCategory",
+            "name": "category",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bool",
+            "name": "isVerified",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct HyreBlock.Profile[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAllJobs",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "employer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "budget",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "deadline",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum HyreBlock.JobType",
+            "name": "jobType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum HyreBlock.ProfessionalCategory",
+            "name": "category",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "location",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "requirements",
+            "type": "string"
+          },
+          {
+            "internalType": "enum HyreBlock.JobStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "updatedAt",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct HyreBlock.Job[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_jobId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getJobApplications",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "jobId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "applicant",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "coverLetter",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "proposedRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "estimatedTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum HyreBlock.ApplicationStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "updatedAt",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct HyreBlock.Application[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_professional",
+        "type": "address"
+      }
+    ],
+    "name": "getProfileByAddress",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "enum HyreBlock.ProfessionalCategory",
+        "name": "_category",
+        "type": "uint8"
+      }
+    ],
+    "name": "getProfilesByCategory",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "professional",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "bio",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "skills",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "experience",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "education",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "portfolioUrl",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "imageUrl",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "hourlyRate",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalRating",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "ratingCount",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "updatedAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum HyreBlock.ProfessionalCategory",
+            "name": "category",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bool",
+            "name": "isVerified",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct HyreBlock.Profile[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "enum HyreBlock.JobType",
+        "name": "_jobType",
+        "type": "uint8"
+      }
+    ],
+    "name": "getJobsByType",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "employer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "budget",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "deadline",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum HyreBlock.JobType",
+            "name": "jobType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum HyreBlock.ProfessionalCategory",
+            "name": "category",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "location",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "requirements",
+            "type": "string"
+          },
+          {
+            "internalType": "enum HyreBlock.JobStatus",
+            "name": "status",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "updatedAt",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct HyreBlock.Job[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_profileId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_verified",
+        "type": "bool"
+      }
+    ],
+    "name": "verifyProfile",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_fee",
+        "type": "uint256"
+      }
+    ],
+    "name": "setPlatformFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawFees",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "unpause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
