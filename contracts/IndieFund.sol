@@ -1,22 +1,58 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 
-contract IndieFund is Ownable, ReentrancyGuard {
-    IERC20 public filmToken;
+/**
+ * @title IndieFund
+ * @dev Platform for crowdfunding film projects
+ */
+contract IndieFund is 
+    Initializable, 
+    AccessControlUpgradeable, 
+    ReentrancyGuardUpgradeable, 
+    PausableUpgradeable, 
+    UUPSUpgradeable 
+{
+    using CountersUpgradeable for CountersUpgradeable.Counter;
     
-    enum ProjectStatus { Pending, Active, Funded, Completed, Cancelled }
-    enum MilestoneStatus { Pending, Approved, Rejected, Released }
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+    bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
     
-    struct Milestone {
-        string title;
-        string description;
-        uint256 amount;
-        uint256 releaseDate;
-        MilestoneStatus status;
+    IERC20Upgradeable public filmToken;
+    
+    CountersUpgradeable.Counter private _projectIds;
+    
+    // Project status
+    enum ProjectStatus {
+        Pending,
+        Active,
+        Funded,
+        Completed,
+        Canceled,
+        Failed
+    }
+    
+    // Project verification status
+    enum VerificationStatus {
+        Unverified,
+        Pending,
+        Verified,
+        Rejected
+    }
+    
+    // Milestone status
+    enum MilestoneStatus {
+        Pending,
+        Completed,
+        Failed
     }
     
     struct Project {
@@ -26,191 +62,643 @@ contract IndieFund is Ownable, ReentrancyGuard {
         string description;
         string ipfsHash;
         uint256 fundingGoal;
-        uint256 minFundingGoal;
-        uint256 raisedAmount;
-        uint256 startDate;
-        uint256 endDate;
+        uint256 minContribution;
+        uint256 maxContribution;
+        uint256 deadline;
+        uint256 totalFunds;
+        uint256 totalBackers;
         ProjectStatus status;
-        Milestone[] milestones;
-        mapping(address => uint256) contributions;
-        uint256 contributorsCount;
+        VerificationStatus verificationStatus;
+        uint256 createdAt;
+        uint256 updatedAt;
+        bool refundEnabled;
     }
     
-    uint256 public projectCount;
+    struct Milestone {
+        uint256 id;
+        uint256 projectId;
+        string title;
+        string description;
+        uint256 fundingPercentage;
+        uint256 deadline;
+        MilestoneStatus status;
+        uint256 createdAt;
+        uint256 completedAt;
+    }
+    
+    struct Contribution {
+        address backer;
+        uint256 projectId;
+        uint256 amount;
+        uint256 timestamp;
+        bool refunded;
+    }
+    
+    struct Update {
+        uint256 id;
+        uint256 projectId;
+        string title;
+        string content;
+        string ipfsHash;
+        uint256 timestamp;
+    }
+    
+    // Mapping of project ID to project
     mapping(uint256 => Project) public projects;
     
-    event ProjectCreated(uint256 indexed id, address indexed creator, string title, uint256 fundingGoal);
-    event ProjectFunded(uint256 indexed id, address indexed contributor, uint256 amount);
-    event MilestoneAdded(uint256 indexed projectId, uint256 milestoneIndex, string title);
-    event MilestoneApproved(uint256 indexed projectId, uint256 milestoneIndex);
-    event MilestoneReleased(uint256 indexed projectId, uint256 milestoneIndex, uint256 amount);
-    event ProjectCancelled(uint256 indexed id);
-    event ProjectCompleted(uint256 indexed id);
+    // Mapping of project ID to milestones
+    mapping(uint256 => Milestone[]) public projectMilestones;
     
-    constructor(address _filmToken) {
-        filmToken = IERC20(_filmToken);
+    // Mapping of project ID to updates
+    mapping(uint256 => Update[]) public projectUpdates;
+    
+    // Mapping of project ID to backer to contribution
+    mapping(uint256 => mapping(address => Contribution)) public contributions;
+    
+    // Mapping of project ID to backer addresses
+    mapping(uint256 => address[]) public projectBackers;
+    
+    // Mapping of backer to backed projects
+    mapping(address => uint256[]) public backedProjects;
+    
+    // Mapping of creator to created projects
+    mapping(address => uint256[]) public createdProjects;
+    
+    // Platform fee in basis points (100 = 1%)
+    uint256 public platformFee;
+    
+    // Events
+    event ProjectCreated(
+        uint256 indexed id,
+        address indexed creator,
+        string title,
+        uint256 fundingGoal,
+        uint256 deadline
+    );
+    
+    event ProjectUpdated(uint256 indexed id, ProjectStatus status);
+    event ProjectVerified(uint256 indexed id, VerificationStatus status);
+    event ContributionMade(uint256 indexed projectId, address indexed backer, uint256 amount);
+    event RefundClaimed(uint256 indexed projectId, address indexed backer, uint256 amount);
+    event FundsWithdrawn(uint256 indexed projectId, address indexed creator, uint256 amount);
+    event MilestoneAdded(uint256 indexed projectId, uint256 indexed milestoneId, string title);
+    event MilestoneCompleted(uint256 indexed projectId, uint256 indexed milestoneId);
+    event UpdatePosted(uint256 indexed projectId, uint256 indexed updateId, string title);
+    
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
     }
     
+    /**
+     * @dev Initializes the contract
+     * @param _filmToken Address of the FILM token contract
+     */
+    function initialize(
+        address _filmToken,
+        address admin
+    ) public initializer {
+        __AccessControl_init();
+        __ReentrancyGuard_init();
+        __Pausable_init();
+        __UUPSUpgradeable_init();
+        
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+        _grantRole(ADMIN_ROLE, admin);
+        _grantRole(UPGRADER_ROLE, admin);
+        _grantRole(VERIFIER_ROLE, admin);
+        
+        filmToken = IERC20Upgradeable(_filmToken);
+        
+        platformFee = 250; // 2.5%
+    }
+    
+    /**
+     * @dev Creates a new project
+     * @param _title Project title
+     * @param _description Project description
+     * @param _ipfsHash IPFS hash for additional data
+     * @param _fundingGoal Funding goal in FILM tokens
+     * @param _minContribution Minimum contribution in FILM tokens
+     * @param _maxContribution Maximum contribution in FILM tokens (0 for no max)
+     * @param _deadline Deadline timestamp
+     * @param _milestones Array of milestone titles
+     * @param _milestoneDescriptions Array of milestone descriptions
+     * @param _milestoneFundingPercentages Array of milestone funding percentages
+     * @param _milestoneDeadlines Array of milestone deadlines
+     */
     function createProject(
         string memory _title,
         string memory _description,
         string memory _ipfsHash,
         uint256 _fundingGoal,
-        uint256 _minFundingGoal,
-        uint256 _startDate,
-        uint256 _endDate
-    ) external {
-        require(_startDate >= block.timestamp, "Start date must be in the future");
-        require(_endDate > _startDate, "End date must be after start date");
+        uint256 _minContribution,
+        uint256 _maxContribution,
+        uint256 _deadline,
+        string[] memory _milestones,
+        string[] memory _milestoneDescriptions,
+        uint256[] memory _milestoneFundingPercentages,
+        uint256[] memory _milestoneDeadlines
+    ) external whenNotPaused {
+        require(bytes(_title).length > 0, "Title cannot be empty");
         require(_fundingGoal > 0, "Funding goal must be greater than 0");
-        require(_minFundingGoal > 0 && _minFundingGoal <= _fundingGoal, "Invalid min funding goal");
+        require(_minContribution > 0, "Min contribution must be greater than 0");
+        require(_deadline > block.timestamp, "Deadline must be in the future");
+        require(_milestones.length == _milestoneDescriptions.length, "Milestone arrays length mismatch");
+        require(_milestones.length == _milestoneFundingPercentages.length, "Milestone arrays length mismatch");
+        require(_milestones.length == _milestoneDeadlines.length, "Milestone arrays length mismatch");
         
-        projectCount++;
-        Project storage project = projects[projectCount];
-        project.id = projectCount;
-        project.creator = msg.sender;
-        project.title = _title;
-        project.description = _description;
-        project.ipfsHash = _ipfsHash;
-        project.fundingGoal = _fundingGoal;
-        project.minFundingGoal = _minFundingGoal;
-        project.startDate = _startDate;
-        project.endDate = _endDate;
-        project.status = ProjectStatus.Pending;
+        // Check that milestone percentages add up to 100%
+        uint256 totalPercentage = 0;
+        for (uint256 i = 0; i < _milestoneFundingPercentages.length; i++) {
+            totalPercentage += _milestoneFundingPercentages[i];
+        }
+        require(totalPercentage == 10000, "Milestone percentages must add up to 100%");
         
-        emit ProjectCreated(projectCount, msg.sender, _title, _fundingGoal);
-    }
-    
-    function approveProject(uint256 _projectId) external onlyOwner {
-        Project storage project = projects[_projectId];
-        require(project.status == ProjectStatus.Pending, "Project not in pending status");
+        _projectIds.increment();
+        uint256 newProjectId = _projectIds.current();
         
-        project.status = ProjectStatus.Active;
-    }
-    
-    function addMilestone(
-        uint256 _projectId,
-        string memory _title,
-        string memory _description,
-        uint256 _amount,
-        uint256 _releaseDate
-    ) external {
-        Project storage project = projects[_projectId];
-        require(msg.sender == project.creator, "Only creator can add milestones");
-        require(project.status == ProjectStatus.Pending || project.status == ProjectStatus.Active, "Project not in valid status");
-        
-        Milestone memory milestone = Milestone({
+        projects[newProjectId] = Project({
+            id: newProjectId,
+            creator: msg.sender,
             title: _title,
             description: _description,
-            amount: _amount,
-            releaseDate: _releaseDate,
-            status: MilestoneStatus.Pending
+            ipfsHash: _ipfsHash,
+            fundingGoal: _fundingGoal,
+            minContribution: _minContribution,
+            maxContribution: _maxContribution > 0 ? _maxContribution : type(uint256).max,
+            deadline: _deadline,
+            totalFunds: 0,
+            totalBackers: 0,
+            status: ProjectStatus.Pending,
+            verificationStatus: VerificationStatus.Pending,
+            createdAt: block.timestamp,
+            updatedAt: block.timestamp,
+            refundEnabled: false
         });
         
-        project.milestones.push(milestone);
+        // Add milestones
+        for (uint256 i = 0; i < _milestones.length; i++) {
+            projectMilestones[newProjectId].push(Milestone({
+                id: i + 1,
+                projectId: newProjectId,
+                title: _milestones[i],
+                description: _milestoneDescriptions[i],
+                fundingPercentage: _milestoneFundingPercentages[i],
+                deadline: _milestoneDeadlines[i],
+                status: MilestoneStatus.Pending,
+                createdAt: block.timestamp,
+                completedAt: 0
+            }));
+            
+            emit MilestoneAdded(newProjectId, i + 1, _milestones[i]);
+        }
         
-        emit MilestoneAdded(_projectId, project.milestones.length - 1, _title);
+        createdProjects[msg.sender].push(newProjectId);
+        
+        emit ProjectCreated(
+            newProjectId,
+            msg.sender,
+            _title,
+            _fundingGoal,
+            _deadline
+        );
     }
     
-    function fundProject(uint256 _projectId, uint256 _amount) external nonReentrant {
+    /**
+     * @dev Verifies a project
+     * @param _projectId Project ID
+     * @param _status Verification status
+     */
+    function verifyProject(uint256 _projectId, VerificationStatus _status) external onlyRole(VERIFIER_ROLE) {
         Project storage project = projects[_projectId];
+        
+        require(project.id > 0, "Project does not exist");
+        require(project.verificationStatus == VerificationStatus.Pending, "Project not pending verification");
+        
+       project.verificationStatus = _status;
+        project.updatedAt = block.timestamp;
+        
+        if (_status == VerificationStatus.Verified) {
+            project.status = ProjectStatus.Active;
+        } else if (_status == VerificationStatus.Rejected) {
+            project.status = ProjectStatus.Canceled;
+        }
+        
+        emit ProjectVerified(_projectId, _status);
+        emit ProjectUpdated(_projectId, project.status);
+    }
+    
+    /**
+     * @dev Contributes to a project
+     * @param _projectId Project ID
+     * @param _amount Amount in FILM tokens
+     */
+    function contribute(uint256 _projectId, uint256 _amount) external nonReentrant whenNotPaused {
+        Project storage project = projects[_projectId];
+        
+        require(project.id > 0, "Project does not exist");
         require(project.status == ProjectStatus.Active, "Project not active");
-        require(block.timestamp >= project.startDate, "Funding not started");
-        require(block.timestamp <= project.endDate, "Funding ended");
+        require(project.verificationStatus == VerificationStatus.Verified, "Project not verified");
+        require(block.timestamp <= project.deadline, "Project deadline passed");
+        require(_amount >= project.minContribution, "Amount below minimum contribution");
+        require(_amount <= project.maxContribution, "Amount above maximum contribution");
         
-        if (project.contributions[msg.sender] == 0) {
-            project.contributorsCount++;
+        // Check if already contributed
+        Contribution storage contribution = contributions[_projectId][msg.sender];
+        
+        if (contribution.amount > 0) {
+            // Update existing contribution
+            require(contribution.amount + _amount <= project.maxContribution, "Total contribution exceeds maximum");
+            contribution.amount += _amount;
+            contribution.timestamp = block.timestamp;
+        } else {
+            // New contribution
+            contributions[_projectId][msg.sender] = Contribution({
+                backer: msg.sender,
+                projectId: _projectId,
+                amount: _amount,
+                timestamp: block.timestamp,
+                refunded: false
+            });
+            
+            projectBackers[_projectId].push(msg.sender);
+            backedProjects[msg.sender].push(_projectId);
+            project.totalBackers++;
         }
         
-        project.contributions[msg.sender] += _amount;
-        project.raisedAmount += _amount;
+        // Transfer tokens from contributor to contract
+        require(filmToken.transferFrom(msg.sender, address(this), _amount), "Transfer failed");
         
-        require(filmToken.transferFrom(msg.sender, address(this), _amount), "Token transfer failed");
+        project.totalFunds += _amount;
+        project.updatedAt = block.timestamp;
         
-        emit ProjectFunded(_projectId, msg.sender, _amount);
-        
-        if (project.raisedAmount >= project.fundingGoal) {
+        // Check if funding goal reached
+        if (project.totalFunds >= project.fundingGoal) {
             project.status = ProjectStatus.Funded;
+            emit ProjectUpdated(_projectId, project.status);
         }
+        
+        emit ContributionMade(_projectId, msg.sender, _amount);
     }
     
-    function approveMilestone(uint256 _projectId, uint256 _milestoneIndex) external onlyOwner {
+    /**
+     * @dev Claims a refund for a failed project
+     * @param _projectId Project ID
+     */
+    function claimRefund(uint256 _projectId) external nonReentrant whenNotPaused {
         Project storage project = projects[_projectId];
-        require(project.status == ProjectStatus.Funded || project.status == ProjectStatus.Active, "Project not funded or active");
-        require(_milestoneIndex < project.milestones.length, "Invalid milestone index");
         
-        Milestone storage milestone = project.milestones[_milestoneIndex];function approveMilestone(uint256 _projectId, uint256 _milestoneIndex) external onlyOwner {
-        Project storage project = projects[_projectId];
-        require(project.status == ProjectStatus.Funded || project.status == ProjectStatus.Active, "Project not funded or active");
-        require(_milestoneIndex < project.milestones.length, "Invalid milestone index");
+        require(project.id > 0, "Project does not exist");
+        require(
+            project.status == ProjectStatus.Failed || 
+            project.status == ProjectStatus.Canceled || 
+            project.refundEnabled, 
+            "Refunds not available"
+        );
         
-        Milestone storage milestone = project.milestones[_milestoneIndex];
-        require(milestone.status == MilestoneStatus.Pending, "Milestone not in pending status");
+        Contribution storage contribution = contributions[_projectId][msg.sender];
         
-        milestone.status = MilestoneStatus.Approved;
+        require(contribution.amount > 0, "No contribution found");
+        require(!contribution.refunded, "Already refunded");
         
-        emit MilestoneApproved(_projectId, _milestoneIndex);
+        uint256 refundAmount = contribution.amount;
+        contribution.refunded = true;
+        
+        // Transfer tokens back to contributor
+        require(filmToken.transfer(msg.sender, refundAmount), "Transfer failed");
+        
+        emit RefundClaimed(_projectId, msg.sender, refundAmount);
     }
     
-    function releaseMilestone(uint256 _projectId, uint256 _milestoneIndex) external onlyOwner {
+    /**
+     * @dev Withdraws funds for a milestone
+     * @param _projectId Project ID
+     * @param _milestoneId Milestone ID
+     */
+    function withdrawMilestoneFunds(uint256 _projectId, uint256 _milestoneId) external nonReentrant whenNotPaused {
         Project storage project = projects[_projectId];
-        require(project.status == ProjectStatus.Funded, "Project not funded");
-        require(_milestoneIndex < project.milestones.length, "Invalid milestone index");
         
-        Milestone storage milestone = project.milestones[_milestoneIndex];
-        require(milestone.status == MilestoneStatus.Approved, "Milestone not approved");
-        require(block.timestamp >= milestone.releaseDate, "Release date not reached");
+        require(project.id > 0, "Project does not exist");
+        require(project.creator == msg.sender, "Not project creator");
+        require(project.status == ProjectStatus.Funded || project.status == ProjectStatus.Completed, "Project not funded");
         
-        milestone.status = MilestoneStatus.Released;
+        require(_milestoneId > 0 && _milestoneId <= projectMilestones[_projectId].length, "Invalid milestone ID");
         
-        require(filmToken.transfer(project.creator, milestone.amount), "Token transfer failed");
+        Milestone storage milestone = projectMilestones[_projectId][_milestoneId - 1];
         
-        emit MilestoneReleased(_projectId, _milestoneIndex, milestone.amount);
+        require(milestone.status == MilestoneStatus.Completed, "Milestone not completed");
         
-        // Check if all milestones are released
-        bool allReleased = true;
-        for (uint i = 0; i < project.milestones.length; i++) {
-            if (project.milestones[i].status != MilestoneStatus.Released) {
-                allReleased = false;
+        // Calculate amount to withdraw
+        uint256 amount = (project.totalFunds * milestone.fundingPercentage) / 10000;
+        
+        // Calculate platform fee
+        uint256 fee = (amount * platformFee) / 10000;
+        uint256 creatorAmount = amount - fee;
+        
+        // Transfer tokens to creator
+        require(filmToken.transfer(project.creator, creatorAmount), "Transfer failed");
+        
+        emit FundsWithdrawn(_projectId, project.creator, creatorAmount);
+    }
+    
+    /**
+     * @dev Completes a milestone
+     * @param _projectId Project ID
+     * @param _milestoneId Milestone ID
+     */
+    function completeMilestone(uint256 _projectId, uint256 _milestoneId) external onlyRole(VERIFIER_ROLE) {
+        Project storage project = projects[_projectId];
+        
+        require(project.id > 0, "Project does not exist");
+        require(project.status == ProjectStatus.Funded || project.status == ProjectStatus.Completed, "Project not funded");
+        
+        require(_milestoneId > 0 && _milestoneId <= projectMilestones[_projectId].length, "Invalid milestone ID");
+        
+        Milestone storage milestone = projectMilestones[_projectId][_milestoneId - 1];
+        
+        require(milestone.status == MilestoneStatus.Pending, "Milestone not pending");
+        
+        milestone.status = MilestoneStatus.Completed;
+        milestone.completedAt = block.timestamp;
+        
+        // Check if all milestones are completed
+        bool allCompleted = true;
+        for (uint256 i = 0; i < projectMilestones[_projectId].length; i++) {
+            if (projectMilestones[_projectId][i].status != MilestoneStatus.Completed) {
+                allCompleted = false;
                 break;
             }
         }
         
-        if (allReleased) {
+        if (allCompleted) {
             project.status = ProjectStatus.Completed;
-            emit ProjectCompleted(project.id);
+            project.updatedAt = block.timestamp;
+            emit ProjectUpdated(_projectId, project.status);
         }
+        
+        emit MilestoneCompleted(_projectId, _milestoneId);
     }
     
-    function cancelProject(uint256 _projectId) external onlyOwner {
+    /**
+     * @dev Fails a milestone
+     * @param _projectId Project ID
+     * @param _milestoneId Milestone ID
+     */
+    function failMilestone(uint256 _projectId, uint256 _milestoneId) external onlyRole(VERIFIER_ROLE) {
         Project storage project = projects[_projectId];
-        require(project.status != ProjectStatus.Completed && project.status != ProjectStatus.Cancelled, "Project already completed or cancelled");
         
-        project.status = ProjectStatus.Cancelled;
+        require(project.id > 0, "Project does not exist");
+        require(project.status == ProjectStatus.Funded, "Project not funded");
         
-        emit ProjectCancelled(_projectId);
+        require(_milestoneId > 0 && _milestoneId <= projectMilestones[_projectId].length, "Invalid milestone ID");
+        
+        Milestone storage milestone = projectMilestones[_projectId][_milestoneId - 1];
+        
+        require(milestone.status == MilestoneStatus.Pending, "Milestone not pending");
+        
+        milestone.status = MilestoneStatus.Failed;
+        
+        // Enable refunds for the project
+        project.refundEnabled = true;
+        project.status = ProjectStatus.Failed;
+        project.updatedAt = block.timestamp;
+        
+        emit ProjectUpdated(_projectId, project.status);
     }
     
-    function refundContribution(uint256 _projectId) external nonReentrant {
+    /**
+     * @dev Posts an update to a project
+     * @param _projectId Project ID
+     * @param _title Update title
+     * @param _content Update content
+     * @param _ipfsHash IPFS hash for additional data
+     */
+    function postUpdate(
+        uint256 _projectId,
+        string memory _title,
+        string memory _content,
+        string memory _ipfsHash
+    ) external whenNotPaused {
         Project storage project = projects[_projectId];
-        require(project.status == ProjectStatus.Cancelled || 
-               (project.status == ProjectStatus.Active && block.timestamp > project.endDate && project.raisedAmount < project.minFundingGoal), 
-               "Project not eligible for refund");
         
-        uint256 contribution = project.contributions[msg.sender];
-        require(contribution > 0, "No contribution to refund");
+        require(project.id > 0, "Project does not exist");
+        require(project.creator == msg.sender, "Not project creator");
+        require(bytes(_title).length > 0, "Title cannot be empty");
         
-        project.contributions[msg.sender] = 0;
-        project.raisedAmount -= contribution;
+        uint256 updateId = projectUpdates[_projectId].length + 1;
         
-        require(filmToken.transfer(msg.sender, contribution), "Token transfer failed");
+        projectUpdates[_projectId].push(Update({
+            id: updateId,
+            projectId: _projectId,
+            title: _title,
+            content: _content,
+            ipfsHash: _ipfsHash,
+            timestamp: block.timestamp
+        }));
+        
+        emit UpdatePosted(_projectId, updateId, _title);
     }
     
+    /**
+     * @dev Cancels a project
+     * @param _projectId Project ID
+     */
+    function cancelProject(uint256 _projectId) external whenNotPaused {
+        Project storage project = projects[_projectId];
+        
+        require(project.id > 0, "Project does not exist");
+        require(project.creator == msg.sender || hasRole(ADMIN_ROLE, msg.sender), "Not authorized");
+        require(project.status == ProjectStatus.Pending || project.status == ProjectStatus.Active, "Cannot cancel project");
+        
+        project.status = ProjectStatus.Canceled;
+        project.updatedAt = block.timestamp;
+        
+        emit ProjectUpdated(_projectId, project.status);
+    }
+    
+    /**
+     * @dev Gets a project
+     * @param _projectId Project ID
+     * @return Project data
+     */
+    function getProject(uint256 _projectId) external view returns (
+        uint256 id,
+        address creator,
+        string memory title,
+        string memory description,
+        string memory ipfsHash,
+        uint256 fundingGoal,
+        uint256 minContribution,
+        uint256 maxContribution,
+        uint256 deadline,
+        uint256 totalFunds,
+        uint256 totalBackers,
+        ProjectStatus status,
+        VerificationStatus verificationStatus,
+        uint256 createdAt,
+        uint256 updatedAt,
+        bool refundEnabled
+    ) {
+        Project storage project = projects[_projectId];
+        require(project.id > 0, "Project does not exist");
+        
+        return (
+            project.id,
+            project.creator,
+            project.title,
+            project.description,
+            project.ipfsHash,
+            project.fundingGoal,
+            project.minContribution,
+            project.maxContribution,
+            project.deadline,
+            project.totalFunds,
+            project.totalBackers,
+            project.status,
+            project.verificationStatus,
+            project.createdAt,
+            project.updatedAt,
+            project.refundEnabled
+        );
+    }
+    
+    /**
+     * @dev Gets project milestones
+     * @param _projectId Project ID
+     * @return Array of milestones
+     */
     function getProjectMilestones(uint256 _projectId) external view returns (Milestone[] memory) {
-        return projects[_projectId].milestones;
+        require(projects[_projectId].id > 0, "Project does not exist");
+        return projectMilestones[_projectId];
     }
     
-    function getContribution(uint256 _projectId, address _contributor) external view returns (uint256) {
-        return projects[_projectId].contributions[_contributor];
+    /**
+     * @dev Gets project updates
+     * @param _projectId Project ID
+     * @return Array of updates
+     */
+    function getProjectUpdates(uint256 _projectId) external view returns (Update[] memory) {
+        require(projects[_projectId].id > 0, "Project does not exist");
+        return projectUpdates[_projectId];
     }
+    
+    /**
+     * @dev Gets a user's contribution to a project
+     * @param _projectId Project ID
+     * @param _backer Backer address
+     * @return Contribution data
+     */
+    function getContribution(uint256 _projectId, address _backer) external view returns (
+        address backer,
+        uint256 projectId,
+        uint256 amount,
+        uint256 timestamp,
+        bool refunded
+    ) {
+        Contribution storage contribution = contributions[_projectId][_backer];
+        
+        return (
+            contribution.backer,
+            contribution.projectId,
+            contribution.amount,
+            contribution.timestamp,
+            contribution.refunded
+        );
+    }
+    
+    /**
+     * @dev Gets projects created by a user
+     * @param _creator Creator address
+     * @return Array of project IDs
+     */
+    function getCreatedProjects(address _creator) external view returns (uint256[] memory) {
+        return createdProjects[_creator];
+    }
+    
+    /**
+     * @dev Gets projects backed by a user
+     * @param _backer Backer address
+     * @return Array of project IDs
+     */
+    function getBackedProjects(address _backer) external view returns (uint256[] memory) {
+        return backedProjects[_backer];
+    }
+    
+    /**
+     * @dev Gets active projects
+     * @return Array of project IDs
+     */
+    function getActiveProjects() external view returns (uint256[] memory) {
+        uint256 activeCount = 0;
+        
+        // Count active projects
+        for (uint256 i = 1; i <= _projectIds.current(); i++) {
+            if (projects[i].status == ProjectStatus.Active && projects[i].verificationStatus == VerificationStatus.Verified) {
+                activeCount++;
+            }
+        }
+        
+        uint256[] memory activeProjects = new uint256[](activeCount);
+        uint256 currentIndex = 0;
+        
+        // Populate array with active project IDs
+        for (uint256 i = 1; i <= _projectIds.current(); i++) {
+            if (projects[i].status == ProjectStatus.Active && projects[i].verificationStatus == VerificationStatus.Verified) {
+                activeProjects[currentIndex] = i;
+                currentIndex++;
+            }
+        }
+        
+        return activeProjects;
+    }
+    
+    /**
+     * @dev Sets the platform fee
+     * @param _fee Fee in basis points (100 = 1%)
+     */
+    function setPlatformFee(uint256 _fee) external onlyRole(ADMIN_ROLE) {
+        require(_fee <= 1000, "Fee cannot exceed 10%");
+        platformFee = _fee;
+    }
+    
+    /**
+     * @dev Withdraws platform fees
+     */
+    function withdrawFees() external onlyRole(ADMIN_ROLE) nonReentrant {
+        uint256 balance = filmToken.balanceOf(address(this));
+        
+        // Calculate total funds in escrow
+        uint256 escrowFunds = 0;
+        for (uint256 i = 1; i <= _projectIds.current(); i++) {
+            Project storage project = projects[i];
+            if (project.status == ProjectStatus.Active || project.status == ProjectStatus.Funded) {
+                escrowFunds += project.totalFunds;
+            }
+        }
+        
+        uint256 fees = balance - escrowFunds;
+        require(fees > 0, "No fees to withdraw");
+        
+        require(filmToken.transfer(msg.sender, fees), "Transfer failed");
+    }
+    
+    /**
+     * @dev Pauses the contract
+     */
+    function pause() external onlyRole(ADMIN_ROLE) {
+        _pause();
+    }
+    
+    /**
+     * @dev Unpauses the contract
+     */
+    function unpause() external onlyRole(ADMIN_ROLE) {
+        _unpause();
+    }
+    
+    /**
+     * @dev Function that should revert when msg.sender is not authorized to upgrade the contract
+     */
+    function _authorizeUpgrade(address newImplementation) internal override onlyRole(UPGRADER_ROLE) {}
 }
