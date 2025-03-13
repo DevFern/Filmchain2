@@ -3,6 +3,24 @@ import { ethers } from 'ethers';
 import Web3Modal from 'web3modal';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 
+// Import ABIs
+import FilmTokenABI from '../contracts/abis/FilmTokenABI.json';
+import BlockOfficeABI from '../contracts/abis/BlockOfficeABI.json';
+import NFTMarketABI from '../contracts/abis/NFTMarketABI.json';
+import HyreBlockABI from '../contracts/abis/HyreBlockABI.json';
+import CommunityVoiceABI from '../contracts/abis/CommunityVoiceABI.json';
+import IndieFundABI from '../contracts/abis/IndieFundABI.json';
+
+// Contract addresses - you should store these in an environment variable or config file
+const CONTRACT_ADDRESSES = {
+  FilmToken: "0x...", // Replace with actual contract address
+  BlockOffice: "0x...", // Replace with actual contract address
+  NFTMarket: "0x...", // Replace with actual contract address
+  HyreBlock: "0x...", // Replace with actual contract address
+  CommunityVoice: "0x...", // Replace with actual contract address
+  IndieFund: "0x..." // Replace with actual contract address
+};
+
 const Web3Context = createContext();
 
 export function useWeb3() {
@@ -16,6 +34,16 @@ export function Web3Provider({ children }) {
   const [chainId, setChainId] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [web3Modal, setWeb3Modal] = useState(null);
+  
+  // Add contract states
+  const [contracts, setContracts] = useState({
+    filmToken: null,
+    blockOffice: null,
+    nftMarket: null,
+    hyreBlock: null,
+    communityVoice: null,
+    indieFund: null
+  });
 
   useEffect(() => {
     // Using public RPC endpoints instead of Infura
@@ -47,6 +75,80 @@ export function Web3Provider({ children }) {
       connectWallet();
     }
   }, [web3Modal]);
+
+  // Initialize contracts when provider is available
+  useEffect(() => {
+    if (provider && chainId) {
+      initializeContracts();
+    }
+  }, [provider, chainId]);
+
+  const initializeContracts = async () => {
+    try {
+      // Create contract instances
+      const filmToken = new ethers.Contract(
+        CONTRACT_ADDRESSES.FilmToken,
+        FilmTokenABI,
+        provider
+      );
+      
+      const blockOffice = new ethers.Contract(
+        CONTRACT_ADDRESSES.BlockOffice,
+        BlockOfficeABI,
+        provider
+      );
+      
+      const nftMarket = new ethers.Contract(
+        CONTRACT_ADDRESSES.NFTMarket,
+        NFTMarketABI,
+        provider
+      );
+      
+      const hyreBlock = new ethers.Contract(
+        CONTRACT_ADDRESSES.HyreBlock,
+        HyreBlockABI,
+        provider
+      );
+      
+      const communityVoice = new ethers.Contract(
+        CONTRACT_ADDRESSES.CommunityVoice,
+        CommunityVoiceABI,
+        provider
+      );
+      
+      const indieFund = new ethers.Contract(
+        CONTRACT_ADDRESSES.IndieFund,
+        IndieFundABI,
+        provider
+      );
+      
+      // Set contracts with signer for write operations
+      if (signer) {
+        setContracts({
+          filmToken: filmToken.connect(signer),
+          blockOffice: blockOffice.connect(signer),
+          nftMarket: nftMarket.connect(signer),
+          hyreBlock: hyreBlock.connect(signer),
+          communityVoice: communityVoice.connect(signer),
+          indieFund: indieFund.connect(signer)
+        });
+      } else {
+        // Read-only contracts
+        setContracts({
+          filmToken,
+          blockOffice,
+          nftMarket,
+          hyreBlock,
+          communityVoice,
+          indieFund
+        });
+      }
+      
+      console.log("Contracts initialized successfully");
+    } catch (error) {
+      console.error("Failed to initialize contracts:", error);
+    }
+  };
 
   const connectWallet = async () => {
     try {
@@ -83,6 +185,16 @@ export function Web3Provider({ children }) {
       setAccount(null);
       setChainId(null);
       setIsConnected(false);
+      
+      // Reset contracts
+      setContracts({
+        filmToken: null,
+        blockOffice: null,
+        nftMarket: null,
+        hyreBlock: null,
+        communityVoice: null,
+        indieFund: null
+      });
     }
   };
 
@@ -105,7 +217,8 @@ export function Web3Provider({ children }) {
     isConnected,
     connectWallet,
     disconnectWallet,
-    switchNetwork
+    switchNetwork,
+    contracts // Expose contracts to components
   };
 
   return (
