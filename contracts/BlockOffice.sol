@@ -547,3 +547,110 @@ contract BlockOffice is
                 currentIndex++;
             }
         }
+return creatorFilms;
+    }
+    
+    /**
+     * @dev Gets reviews for a film
+     * @param _filmId Film ID
+     * @return Array of reviews
+     */
+    function getFilmReviews(uint256 _filmId) external view returns (Review[] memory) {
+        return filmReviews[_filmId];
+    }
+    
+    /**
+     * @dev Gets the average rating for a film
+     * @param _filmId Film ID
+     * @return Average rating (0-5)
+     */
+    function getAverageRating(uint256 _filmId) external view returns (uint256) {
+        Film storage film = films[_filmId];
+        if (film.ratingCount == 0) {
+            return 0;
+        }
+        return film.totalRating / film.ratingCount;
+    }
+    
+    /**
+     * @dev Sets the subscription price for a tier
+     * @param _tier Subscription tier
+     * @param _price Price in FILM tokens
+     */
+    function setSubscriptionPrice(SubscriptionTier _tier, uint256 _price) external onlyRole(ADMIN_ROLE) {
+        subscriptionPrices[_tier] = _price;
+    }
+    
+    /**
+     * @dev Sets the subscription duration for a tier
+     * @param _tier Subscription tier
+     * @param _duration Duration in seconds
+     */
+    function setSubscriptionDuration(SubscriptionTier _tier, uint256 _duration) external onlyRole(ADMIN_ROLE) {
+        subscriptionDurations[_tier] = _duration;
+    }
+    
+    /**
+     * @dev Sets the platform fee
+     * @param _fee Fee in basis points (100 = 1%)
+     */
+    function setPlatformFee(uint256 _fee) external onlyRole(ADMIN_ROLE) {
+        require(_fee <= 1000, "Fee cannot exceed 10%");
+        platformFee = _fee;
+        emit PlatformFeeUpdated(_fee);
+    }
+    
+    /**
+     * @dev Sets the creator royalty
+     * @param _royalty Royalty in basis points (100 = 1%)
+     */
+    function setCreatorRoyalty(uint256 _royalty) external onlyRole(ADMIN_ROLE) {
+        require(_royalty <= 2000, "Royalty cannot exceed 20%");
+        creatorRoyalty = _royalty;
+        emit CreatorRoyaltyUpdated(_royalty);
+    }
+    
+    /**
+     * @dev Withdraws platform fees
+     */
+    function withdrawFees() external onlyRole(ADMIN_ROLE) nonReentrant {
+        uint256 balance = filmToken.balanceOf(address(this));
+        require(balance > 0, "No fees to withdraw");
+        
+        require(filmToken.transfer(msg.sender, balance), "Transfer failed");
+    }
+    
+    /**
+     * @dev Pauses the contract
+     */
+    function pause() external onlyRole(ADMIN_ROLE) {
+        _pause();
+    }
+    
+    /**
+     * @dev Unpauses the contract
+     */
+    function unpause() external onlyRole(ADMIN_ROLE) {
+        _unpause();
+    }
+    
+    /**
+     * @dev Function that should revert when msg.sender is not authorized to upgrade the contract
+     */
+    function _authorizeUpgrade(address newImplementation) internal override onlyRole(UPGRADER_ROLE) {}
+    
+    /**
+     * @dev Gets the latest price from the Chainlink price feed
+     * @return The latest price
+     */
+    function getLatestPrice() public view returns (int) {
+        (
+            /* uint80 roundID */,
+            int price,
+            /* uint startedAt */,
+            /* uint timeStamp */,
+            /* uint80 answeredInRound */
+        ) = priceFeed.latestRoundData();
+        return price;
+    }
+}
